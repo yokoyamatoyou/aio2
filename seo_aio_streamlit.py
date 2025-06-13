@@ -1218,11 +1218,11 @@ def main():
                 except Exception:
                     api_source = "不明"
                 
-                st.success(f"✅ APIキーを{api_source}から正常に取得しました (文字数: {len(st.session_state.analyzer.api_key)})")
-                st.info(f"🔍 使用モデル: gpt-4o-mini-search-preview (自動フォールバック: gpt-4o-mini)")
-                st.info(f"📊 両モデル対応: temperature・response_formatパラメータ自動調整")
+                st.success(f"APIキーを{api_source}から正常に取得しました (文字数: {len(st.session_state.analyzer.api_key)})")
+                st.info(f"使用モデル: gpt-4o-mini-search-preview (自動フォールバック: gpt-4o-mini)")
+                st.info(f"両モデル対応: temperature・response_formatパラメータ自動調整")
             else:
-                st.warning("⚠️ APIキーが設定されていません")
+                st.warning("APIキーが設定されていません")
                 
         except ValueError as e:
             st.error(f"初期化エラー: {str(e)}")
@@ -1233,7 +1233,7 @@ def main():
     
     # サイドバー: 入力フォーム
     with st.sidebar:
-        st.header("🎯 分析設定")
+        st.header("分析設定")
         
         # URL入力
         url = text_input(
@@ -1261,7 +1261,7 @@ def main():
         st.markdown(f"**現在の設定:** SEO {100-balance}% - AIO {balance}%")
         
         # 業界判定ボタン
-        if primary_button("🔍 業界判定のみ"):
+        if primary_button("業界判定のみ"):
             if url:
                 with st.spinner("業界を判定中..."):
                     try:
@@ -1289,7 +1289,7 @@ def main():
                 st.warning("URLを入力してください")
         
         # 分析実行ボタン
-        analyze_clicked = st.button("🚀 分析開始", use_container_width=True, type="primary")
+        analyze_clicked = st.button("分析開始", use_container_width=True, type="primary")
     
     # メインエリア
     if analyze_clicked and url:
@@ -1298,7 +1298,7 @@ def main():
                 # 分析実行
                 results = st.session_state.analyzer.analyze_url(url, industry, balance)
                 st.session_state.analysis_results = results
-                st.success("✅ 分析が完了しました！")
+                st.success("分析が完了しました！")
                 
             except Exception as e:
                 st.error(f"❌ 分析エラー: {str(e)}")
@@ -1309,10 +1309,10 @@ def main():
         results = st.session_state.analysis_results
         
         # タブ作成
-        tab1, tab2, tab3, tab4, tab5 = st.tabs(["📊 概要", "🎯 AIO分析", "📈 SEO分析", "🏭 業界分析", "📄 統合レポート"])
+        tab1, tab2, tab3, tab4, tab5 = st.tabs(["概要", "AIO分析", "SEO分析", "業界分析", "統合レポート"])
         
         with tab1:  # 概要
-            st.header("📊 分析概要")
+            st.header("分析概要")
             
             # スコア表示（メーター削除）
             col1, col2, col3 = st.columns(3)
@@ -1329,28 +1329,28 @@ def main():
                 st.metric("総合スコア", f"{integrated_results.get('integrated_score', 0):.1f}/100")
             
             # 推奨改善ポイント
-            st.subheader("🎯 推奨改善ポイント")
+            st.subheader("推奨改善ポイント")
             for i, improvement in enumerate(integrated_results.get("improvements", []), 1):
                 st.write(f"{i}. {improvement}")
             
             # 推奨バランス
             rec_balance = integrated_results.get('recommended_balance', {})
-            st.subheader("⚖️ 推奨分析バランス")
+            st.subheader("推奨分析バランス")
             st.write(f"SEO {rec_balance.get('seo_focus', 50)}% - AIO {rec_balance.get('aio_focus', 50)}%")
         
         with tab2:  # AIO分析
-            st.header("🎯 AIO（生成AI検索最適化）分析")
+            st.header("AIO（生成AI検索最適化）分析")
             
             aio_results = results.get("aio_results", {})
             scores_data = aio_results.get("scores", {})
             
             # 上位8項目
-            st.subheader("🏆 E-E-A-T & AI検索最適化項目")
+            st.subheader("E-E-A-T & AI検索最適化項目")
             fig_upper = create_aio_score_chart_vertical(scores_data, AIO_SCORE_MAP_JP_UPPER, "E-E-A-T & AI検索最適化スコア")
             st.plotly_chart(fig_upper, use_container_width=True)
             
             # 上位8項目のコメント
-            with st.expander("📝 E-E-A-T & AI検索最適化項目 詳細コメント"):
+            with st.expander("E-E-A-T & AI検索最適化項目 詳細コメント"):
                 for key_eng, label_jp in AIO_SCORE_MAP_JP_UPPER.items():
                     score_item = scores_data.get(key_eng, {"score": 0, "advice": "N/A"})
                     st.write(f"**{label_jp} ({score_item.get('score', 0)}/10)**")
@@ -1358,12 +1358,12 @@ def main():
                     st.write("---")
             
             # 下位8項目
-            st.subheader("💡 ユーザー体験 & 技術項目")
+            st.subheader("ユーザー体験 & 技術項目")
             fig_lower = create_aio_score_chart_vertical(scores_data, AIO_SCORE_MAP_JP_LOWER, "ユーザー体験 & 技術スコア")
             st.plotly_chart(fig_lower, use_container_width=True)
             
             # 下位8項目のコメント
-            with st.expander("📝 ユーザー体験 & 技術項目 詳細コメント"):
+            with st.expander("ユーザー体験 & 技術項目 詳細コメント"):
                 for key_eng, label_jp in AIO_SCORE_MAP_JP_LOWER.items():
                     score_item = scores_data.get(key_eng, {"score": 0, "advice": "N/A"})
                     st.write(f"**{label_jp} ({score_item.get('score', 0)}/10)**")
@@ -1371,7 +1371,7 @@ def main():
                     st.write("---")
             
             # 改善施策
-            st.subheader("⚡ 即効改善施策")
+            st.subheader("即効改善施策")
             for i, action in enumerate(aio_results.get("immediate_actions", []), 1):
                 with st.expander(f"{i}. {action.get('action', 'N/A')}"):
                     st.write(f"**実装方法:** {action.get('method', 'N/A')}")
@@ -1379,14 +1379,14 @@ def main():
             
             # 市場トレンド対応
             if aio_results.get("market_trend_strategies"):
-                st.subheader("📈 市場トレンド対応戦略")
+                st.subheader("市場トレンド対応戦略")
                 for i, trend in enumerate(aio_results.get("market_trend_strategies", []), 1):
                     with st.expander(f"{i}. {trend.get('trend', 'N/A')}"):
                         st.write(f"**対応戦略:** {trend.get('strategy', 'N/A')}")
                         st.write(f"**優先度:** {trend.get('priority', 'N/A')}")
         
         with tab3:  # SEO分析
-            st.header("📈 SEO分析")
+            st.header("SEO分析")
             
             seo_results = results.get("seo_results", {})
             
@@ -1422,7 +1422,7 @@ def main():
             col1, col2 = st.columns(2)
             
             with col1:
-                st.subheader("📋 基本SEO情報")
+                st.subheader("基本SEO情報")
                 basics = seo_results.get("basics", {})
                 garbled = seo_results.get("garbled", {})
                 title_txt = basics.get('title', 'N/A')
@@ -1436,7 +1436,7 @@ def main():
                 st.write(f"**メタディスクリプション:** {desc_txt} ({basics.get('meta_description_length', 0)}文字)")
                 
             with col2:
-                st.subheader("🔗 ページ構造")
+                st.subheader("ページ構造")
                 structure = seo_results.get("structure", {})
                 st.write(f"**内部リンク数:** {structure.get('internal_links_count', 0)}")
                 st.write(f"**外部リンク数:** {structure.get('external_links_count', 0)}")
@@ -1444,7 +1444,7 @@ def main():
                 st.write(f"**Alt属性付き画像:** {structure.get('images_with_alt', 0)}")
             
             # 技術的SEO
-            st.subheader("⚙️ 技術的SEO")
+            st.subheader("技術的SEO")
             technical = seo_results.get("technical", {})
             col1, col2, col3 = st.columns(3)
             
@@ -1458,7 +1458,7 @@ def main():
             # パーソナライズ情報
             personalization = seo_results.get("personalization", {})
             if personalization:
-                st.subheader("🔍 パーソナライズ情報")
+                st.subheader("パーソナライズ情報")
                 meta = personalization.get("meta", {})
                 st.write(f"**Meta Description:** {meta.get('description', 'N/A')}")
                 if meta.get('keywords'):
@@ -1487,7 +1487,7 @@ def main():
                     st.write("**使用技術の手がかり:** " + ", ".join(personalization["tech_stack"]))
         
         with tab4:  # 業界分析
-            st.header("🏭 業界特化分析")
+            st.header("業界特化分析")
             
             final_industry = results.get('final_industry', {})
             industry_analysis = results.get('industry_analysis', {})
@@ -1507,30 +1507,30 @@ def main():
             # 業界特化分析詳細
             aio_industry_analysis = aio_results.get("industry_analysis", {})
             if aio_industry_analysis:
-                st.subheader("📊 業界適合度分析")
+                st.subheader("業界適合度分析")
                 st.write(aio_industry_analysis.get('industry_fit', 'N/A'))
                 
-                st.subheader("📈 市場トレンド分析")
+                st.subheader("市場トレンド分析")
                 st.write(aio_industry_analysis.get('market_trends', 'N/A'))
                 
-                st.subheader("🎯 業界特化改善提案")
+                st.subheader("業界特化改善提案")
                 st.write(aio_industry_analysis.get('specialized_improvements', 'N/A'))
                 
-                st.subheader("⚖️ 規制・コンプライアンス対応")
+                st.subheader("規制・コンプライアンス対応")
                 st.write(aio_industry_analysis.get('compliance_check', 'N/A'))
         
         with tab5:  # 統合レポート
-            st.header("📄 統合レポート")
+            st.header("統合レポート")
             
             # レポート概要
-            st.subheader("📋 レポート概要")
+            st.subheader("レポート概要")
             st.write(f"**分析URL:** {results.get('url', 'N/A')}")
             st.write(f"**業界:** {final_industry.get('primary', 'N/A')} ({final_industry.get('source', 'N/A')})")
             st.write(f"**分析バランス:** SEO {100-results.get('balance', 50)}% - AIO {results.get('balance', 50)}%")
             st.write(f"**総合スコア:** {integrated_results.get('integrated_score', 0):.1f}/100")
             
             # PDF生成ボタン
-            if st.button("📄 詳細PDFレポート生成", use_container_width=True):
+            if st.button("詳細PDFレポート生成", use_container_width=True):
                 try:
                     with st.spinner("PDFレポートを生成中..."):
                         # 一時ファイル名
@@ -1545,14 +1545,14 @@ def main():
                         
                         # ダウンロードボタン
                         st.download_button(
-                            label="📥 PDFレポートをダウンロード",
+                            label="PDFレポートをダウンロード",
                             data=pdf_data,
                             file_name=pdf_filename,
                             mime="application/pdf",
                             use_container_width=True
                         )
                         
-                        st.success("✅ PDFレポートが生成されました！")
+                        st.success("PDFレポートが生成されました！")
                         
                         # 一時ファイル削除
                         import os
@@ -1563,13 +1563,13 @@ def main():
                     st.error(f"❌ PDFレポート生成エラー: {str(e)}")
             
             # 競合差別化ポイント
-            st.subheader("🏆 競合差別化ポイント")
+            st.subheader("競合差別化ポイント")
             for i, advantage in enumerate(aio_results.get("competitive_advantages", []), 1):
                 st.write(f"{i}. **{advantage.get('advantage', 'N/A')}**")
                 st.write(f"   実装方法: {advantage.get('implementation', 'N/A')}")
             
             # 中期戦略
-            st.subheader("🗓️ 中期戦略（1-3ヶ月）")
+            st.subheader("中期戦略（1-3ヶ月）")
             for i, strategy in enumerate(aio_results.get("medium_term_strategies", []), 1):
                 st.write(f"{i}. **{strategy.get('strategy', 'N/A')}**")
                 st.write(f"   期間: {strategy.get('timeline', 'N/A')}")
@@ -1577,25 +1577,25 @@ def main():
     
     else:
         # 初期状態の表示
-        st.info("👈 サイドバーからURLを入力して分析を開始してください")
+        st.info("サイドバーからURLを入力して分析を開始してください")
         
         # 機能説明
         st.markdown("""
-        ## 🔍 SEO・AIO統合分析ツールについて
+        ## SEO・AIO統合分析ツールについて
         
         このツールは、従来のSEO分析と最新のAIO（生成AI検索最適化）分析を統合した
         次世代のウェブサイト分析プラットフォームです。
         
-        ### ✨ 主な機能
+        ### 主な機能
         
-        - **🎯 業界自動判定**: コンテンツから業界を自動識別
-        - **📊 SEO分析**: 従来のSEO指標を詳細分析
-        - **🤖 AIO分析**: 生成AI検索エンジンに最適化された分析
-        - **📈 市場トレンド分析**: 最新の業界動向を反映 (GPT-4o-mini-search-preview)
-        - **📄 詳細PDFレポート**: グラフ付きの包括的レポート生成
-        - **🎨 モダンUI**: グレー基調の洗練されたデザイン
+        - **業界自動判定**: コンテンツから業界を自動識別
+        - **SEO分析**: 従来のSEO指標を詳細分析
+        - **AIO分析**: 生成AI検索エンジンに最適化された分析
+        - **市場トレンド分析**: 最新の業界動向を反映 (GPT-4o-mini-search-preview)
+        - **詳細PDFレポート**: グラフ付きの包括的レポート生成
+        - **モダンUI**: グレー基調の洗練されたデザイン
         
-        ### 🚀 分析項目
+        ### 分析項目
         
         **SEO分析**
         - タイトル・メタディスクリプション最適化
@@ -1608,11 +1608,11 @@ def main():
         - ユーザー体験（検索意図マッチング、独自性、完全性）
         - 技術指標（モバイル対応、ページ速度、メタデータ）
         
-        ### 🎨 デザインテーマ
+        ### デザインテーマ
         グレー基調のモダンテーマを採用し、
         視認性が高く洗練されたユーザーインターフェースを提供します。
         
-        ### 🔧 技術的特徴
+        ### 技術的特徴
         - **環境変数優先**: システム環境変数からAPIキーを取得（.envファイルもサポート）
         - **マルチモデル対応**: GPT-4o-mini-search-preview（市場トレンド分析）+ GPT-4o-mini（フォールバック）
         - **自動パラメータ調整**: モデル特性に応じてtemperature・response_format自動調整
@@ -1621,7 +1621,7 @@ def main():
         """)
         
         # 使用方法
-        with st.expander("📖 使用方法"):
+        with st.expander("使用方法"):
             st.markdown("""
             1. **URL入力**: 分析したいウェブサイトのURLを入力
             2. **業界指定**: 業界を手動入力するか、自動判定を利用
@@ -1637,7 +1637,7 @@ if __name__ == "__main__":
         api_key = os.getenv("OPENAI_API_KEY")
         
         if not api_key:
-            st.error("🚨 OpenAI APIキーが設定されていません。\n\n以下のいずれかの方法で設定してください：\n\n1. **システム環境変数** (推奨)\n   - コンピュータのシステム環境変数にOPENAI_API_KEYを設定\n\n2. **.envファイル**\n   - プロジェクトフォルダに.envファイルを作成してOPENAI_API_KEYを設定")
+            st.error("OpenAI APIキーが設定されていません。\n\n以下のいずれかの方法で設定してください：\n\n1. **システム環境変数** (推奨)\n   - コンピュータのシステム環境変数にOPENAI_API_KEYを設定\n\n2. **.envファイル**\n   - プロジェクトフォルダに.envファイルを作成してOPENAI_API_KEYを設定")
             st.stop()
         
         main()
