@@ -24,10 +24,10 @@ def load_global_styles() -> None:
             border: none;
             border-radius: 4px;
             padding: 0.4rem 1rem;
-            font-weight: 600;
+            font-weight: 400;
         }}
         .primary-button > button:hover {{
-            background-color: {COLOR_PALETTE['secondary']};
+            background-color: {COLOR_PALETTE['primary']};
         }}
         .input-block {{
             background-color: #f0f2f6;

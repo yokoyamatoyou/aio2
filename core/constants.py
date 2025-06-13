@@ -7,8 +7,8 @@ APP_NAME = "SEO・AIO統合分析ツール"
 # インテル風カラースキーム
 COLOR_PALETTE = {
     "primary": "#00C7FD",        # Intel Blue
-    "secondary": "#0068B5",      # Intel Dark Blue
-    "accent": "#0068B5",
+    "secondary": "#00C7FD",      # unify blue shades
+    "accent": "#00C7FD",
     "background": "#FFFFFF",
     "surface": "#F5F7FA",
     "text_primary": "#333333",
@@ -18,11 +18,11 @@ COLOR_PALETTE = {
     "error": "#F44336",
     "info": "#2196F3",
     "gold": "#FF8C00",
-    "dark_blue": "#0068B5",
+    "dark_blue": "#00C7FD",
 }
 
 # フォント設定
-FONT_STACK = "'Inter', 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif"
+FONT_STACK = "'Noto Sans JP', 'Meiryo', 'Hiragino Kaku Gothic ProN', 'Inter', 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif"
 
 # AIOスコアマッピング
 AIO_SCORE_MAP_JP_UPPER = {
