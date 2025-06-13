@@ -1200,6 +1200,10 @@ def main():
     # タイトル
     st.title("SEO・AIO統合分析ツール")
     st.markdown(f"*{APP_NAME} v{APP_VERSION} - モダンUIデザイン*")
+    st.markdown(
+        "<div class='explanation-section'>本ツールはSEOとAIOの視点からサイト\n分析を行い、改善ポイントを提示します。\nサイドバーで設定を入力し、結果を確認してください。</div>",
+        unsafe_allow_html=True,
+    )
     
     # Analyzerの初期化
     if 'analyzer' not in st.session_state:
@@ -1312,6 +1316,7 @@ def main():
         tab1, tab2, tab3, tab4, tab5 = st.tabs(["概要", "AIO分析", "SEO分析", "業界分析", "統合レポート"])
         
         with tab1:  # 概要
+            st.markdown("<div class='function-section'>", unsafe_allow_html=True)
             st.header("分析概要")
             
             # スコア表示（メーター削除）
@@ -1337,6 +1342,7 @@ def main():
             rec_balance = integrated_results.get('recommended_balance', {})
             st.subheader("推奨分析バランス")
             st.write(f"SEO {rec_balance.get('seo_focus', 50)}% - AIO {rec_balance.get('aio_focus', 50)}%")
+            st.markdown("</div>", unsafe_allow_html=True)
         
         with tab2:  # AIO分析
             st.header("AIO（生成AI検索最適化）分析")
@@ -1384,8 +1390,10 @@ def main():
                     with st.expander(f"{i}. {trend.get('trend', 'N/A')}"):
                         st.write(f"**対応戦略:** {trend.get('strategy', 'N/A')}")
                         st.write(f"**優先度:** {trend.get('priority', 'N/A')}")
+            st.markdown("</div>", unsafe_allow_html=True)
         
         with tab3:  # SEO分析
+            st.markdown("<div class='function-section'>", unsafe_allow_html=True)
             st.header("SEO分析")
             
             seo_results = results.get("seo_results", {})
@@ -1485,8 +1493,10 @@ def main():
 
                 if personalization.get("tech_stack"):
                     st.write("**使用技術の手がかり:** " + ", ".join(personalization["tech_stack"]))
-        
+            st.markdown("</div>", unsafe_allow_html=True)
+
         with tab4:  # 業界分析
+            st.markdown("<div class='function-section'>", unsafe_allow_html=True)
             st.header("業界特化分析")
             
             final_industry = results.get('final_industry', {})
@@ -1518,8 +1528,10 @@ def main():
                 
                 st.subheader("規制・コンプライアンス対応")
                 st.write(aio_industry_analysis.get('compliance_check', 'N/A'))
-        
+            st.markdown("</div>", unsafe_allow_html=True)
+
         with tab5:  # 統合レポート
+            st.markdown("<div class='function-section'>", unsafe_allow_html=True)
             st.header("統合レポート")
             
             # レポート概要
@@ -1574,12 +1586,14 @@ def main():
                 st.write(f"{i}. **{strategy.get('strategy', 'N/A')}**")
                 st.write(f"   期間: {strategy.get('timeline', 'N/A')}")
                 st.write(f"   期待成果: {strategy.get('expected_outcome', 'N/A')}")
+            st.markdown("</div>", unsafe_allow_html=True)
     
     else:
         # 初期状態の表示
         st.info("サイドバーからURLを入力して分析を開始してください")
-        
+
         # 機能説明
+        st.markdown("<div class='explanation-section'>", unsafe_allow_html=True)
         st.markdown("""
         ## SEO・AIO統合分析ツールについて
         
@@ -1630,6 +1644,7 @@ def main():
             5. **結果確認**: タブ別に詳細結果を確認
             6. **レポート生成**: PDFで詳細レポートをダウンロード
             """)
+        st.markdown("</div>", unsafe_allow_html=True)
 
 if __name__ == "__main__":
     # 環境変数チェック（システム環境変数優先）

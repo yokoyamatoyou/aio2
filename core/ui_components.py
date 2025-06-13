@@ -16,6 +16,7 @@ def load_global_styles() -> None:
             color: {COLOR_PALETTE['text_primary']};
             font-family: {FONT_STACK};
             font-size: 16px;
+            font-weight: 300;
         }}
         .primary-button > button {{
             background-color: {COLOR_PALETTE['primary']};
@@ -39,6 +40,21 @@ def load_global_styles() -> None:
             font-size: 14px;
             color: {COLOR_PALETTE['text_secondary']};
             margin-bottom: 0.5rem;
+        }}
+        .function-section {{
+            background-color: {COLOR_PALETTE['surface']};
+            padding: 1rem;
+            border: 1px solid {COLOR_PALETTE['secondary']};
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }}
+        .explanation-section {{
+            background-color: {COLOR_PALETTE['background']};
+            padding: 1rem;
+            border-left: 4px solid {COLOR_PALETTE['primary']};
+            border-radius: 4px;
+            font-size: 14px;
+            color: {COLOR_PALETTE['text_secondary']};
         }}
         </style>
         """,
