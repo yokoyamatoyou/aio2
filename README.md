@@ -20,6 +20,10 @@ This repository contains a Streamlit application for combined SEO and AIO (AI se
    ```bash
    python -m py_compile $(git ls-files '*.py')
    ```
+5. Execute the unit tests:
+   ```bash
+   python -m unittest discover tests
+   ```
 
 ## Modules
 

@@ -131,18 +131,9 @@ from core.constants import (
 from core.ui_components import load_global_styles, primary_button, text_input
 from core.industry_detector import IndustryDetector, IndustryAnalysis
 from core.visualization import create_aio_score_chart_vertical
+from core.text_utils import detect_mojibake
 
 
-def detect_mojibake(text: str) -> bool:
-    """Heuristic check for garbled Japanese text."""
-    if not text:
-        return False
-    suspicious_sequences = ["Ã", "Â", "�"]
-    if any(seq in text for seq in suspicious_sequences):
-        return True
-    valid = re.compile(r"[\u0020-\u007E\u3000-\u30FF\u4E00-\u9FFF]+")
-    valid_count = sum(1 for ch in text if valid.match(ch))
-    return valid_count / len(text) < 0.7
 
 class SEOAIOAnalyzer:
     def __init__(self):
