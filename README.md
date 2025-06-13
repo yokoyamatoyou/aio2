@@ -40,3 +40,11 @@ The main `seo_aio_streamlit.py` script imports these modules.
 - Japanese-labeled SEO score graphs for better clarity.
 - Enhanced PDF reports with actionable insights and modern styling.
 - Added conclusion and next-steps section in PDF reports.
+
+## Design Guidelines
+
+The interface uses an Intel-inspired palette:
+
+- **Primary:** `#00C7FD` (Intel Blue)
+- **Secondary:** `#0068B5`
+- Icons rely on simple geometric pictograms without illustrations.

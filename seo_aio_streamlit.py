@@ -835,10 +835,42 @@ JSON以外のテキストや説明は一切含めないでください。
         )
 
         styles = getSampleStyleSheet()
-        title_style = ParagraphStyle('DocTitle', parent=styles['h1'], fontName=DEFAULT_PDF_FONT, fontSize=22, alignment=TA_CENTER, spaceAfter=6*mm)
-        h1_style = ParagraphStyle('DocH1', parent=styles['h1'], fontName=DEFAULT_PDF_FONT, fontSize=16, spaceBefore=6*mm, spaceAfter=3*mm, textColor=colors.HexColor("#1E1E1E"))
-        h2_style = ParagraphStyle('DocH2', parent=styles['h2'], fontName=DEFAULT_PDF_FONT, fontSize=14, spaceBefore=4*mm, spaceAfter=2*mm, textColor=colors.HexColor("#2D2D2D"))
-        normal_style = ParagraphStyle('DocNormal', parent=styles['Normal'], fontName=DEFAULT_PDF_FONT, fontSize=10, spaceAfter=2*mm, leading=14)
+        title_style = ParagraphStyle(
+            'DocTitle',
+            parent=styles['h1'],
+            fontName=DEFAULT_PDF_FONT,
+            fontSize=22,
+            alignment=TA_CENTER,
+            spaceAfter=6*mm,
+            textColor=colors.HexColor(COLOR_PALETTE["secondary"]),
+        )
+        h1_style = ParagraphStyle(
+            'DocH1',
+            parent=styles['h1'],
+            fontName=DEFAULT_PDF_FONT,
+            fontSize=16,
+            spaceBefore=6*mm,
+            spaceAfter=3*mm,
+            textColor=colors.HexColor(COLOR_PALETTE["primary"]),
+        )
+        h2_style = ParagraphStyle(
+            'DocH2',
+            parent=styles['h2'],
+            fontName=DEFAULT_PDF_FONT,
+            fontSize=14,
+            spaceBefore=4*mm,
+            spaceAfter=2*mm,
+            textColor=colors.HexColor(COLOR_PALETTE["secondary"]),
+        )
+        normal_style = ParagraphStyle(
+            'DocNormal',
+            parent=styles['Normal'],
+            fontName=DEFAULT_PDF_FONT,
+            fontSize=10,
+            spaceAfter=2*mm,
+            leading=14,
+            textColor=colors.HexColor(COLOR_PALETTE["text_primary"]),
+        )
         centered_style = ParagraphStyle('DocCentered', parent=normal_style, alignment=TA_CENTER, fontName=DEFAULT_PDF_FONT)
         
         story = []
@@ -1056,7 +1088,7 @@ JSON以外のテキストや説明は一切含めないでください。
             values = list(scores.values())
             
             fig, ax = plt.subplots(figsize=(10, 6))
-            bars = ax.barh(labels, values, color='#4A9EFF', height=0.6)
+            bars = ax.barh(labels, values, color=COLOR_PALETTE["primary"], height=0.6)
             ax.set_xlim(0, 10)
             ax.set_xlabel("スコア ( /10)", fontsize=12)
             ax.set_title("SEOスコア分布", fontsize=14, fontweight='bold')
@@ -1093,7 +1125,7 @@ JSON以外のテキストや説明は一切含めないでください。
             values = [scores_data.get(k, {"score": 0}).get("score", 0) for k in AIO_SCORE_MAP_JP.keys()]
             
             fig, ax = plt.subplots(figsize=(10, 12))
-            bars = ax.barh(labels, values, color='#4A9EFF', height=0.6)
+            bars = ax.barh(labels, values, color=COLOR_PALETTE["primary"], height=0.6)
             ax.set_xlim(0, 10)
             ax.set_xlabel("スコア ( /10)", fontsize=12)
             ax.set_title("AIOスコア分布", fontsize=14, fontweight='bold')
@@ -1157,7 +1189,7 @@ def main():
     # ページ設定
     st.set_page_config(
         page_title="SEO・AIO統合分析ツール",
-        page_icon="🔍",
+        page_icon="◻",
         layout="wide",
         initial_sidebar_state="expanded"
     )
@@ -1166,7 +1198,7 @@ def main():
     set_custom_css()
     
     # タイトル
-    st.title("🔍 SEO・AIO統合分析ツール")
+    st.title("SEO・AIO統合分析ツール")
     st.markdown(f"*{APP_NAME} v{APP_VERSION} - モダンUIデザイン*")
     
     # Analyzerの初期化
@@ -1367,7 +1399,7 @@ def main():
                 fig_seo_detail = go.Figure(data=[go.Bar(
                     x=labels,
                     y=values,
-                    marker=dict(color=COLOR_PALETTE["info"]),
+                    marker=dict(color=COLOR_PALETTE["primary"]),
                     text=[f'{v:.1f}' for v in values],
                     textposition='outside',
                     hovertemplate='%{x}：%{y:.1f}点'
