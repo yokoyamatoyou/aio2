@@ -32,7 +32,7 @@ def load_global_styles() -> None:
         .input-block {{
             background-color: #f0f2f6;
             padding: 1rem;
-            border: 1px solid {COLOR_PALETTE['secondary']};
+            border: none;
             border-radius: 6px;
             margin-bottom: 1rem;
         }}
@@ -53,8 +53,14 @@ def load_global_styles() -> None:
             padding: 1rem;
             border-left: 4px solid {COLOR_PALETTE['primary']};
             border-radius: 4px;
-            font-size: 14px;
+            font-size: 12px;
             color: {COLOR_PALETTE['text_secondary']};
+        }}
+        .stMetric {{
+            overflow-wrap: anywhere;
+        }}
+        .stTabs [data-baseweb='tab'] {{
+            min-width: 130px;
         }}
         </style>
         """,

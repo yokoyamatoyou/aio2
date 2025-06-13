@@ -834,6 +834,14 @@ JSON以外のテキストや説明は一切含めないでください。
             topMargin=1.5*cm, bottomMargin=1.5*cm
         )
 
+        def add_corner(canvas, doc_obj):
+            canvas.saveState()
+            canvas.setFillColor(colors.HexColor(COLOR_PALETTE['primary']))
+            x = doc_obj.pagesize[0] - 25
+            y = doc_obj.pagesize[1] - 25
+            canvas.rect(x, y, 15, 15, fill=1, stroke=0)
+            canvas.restoreState()
+
         styles = getSampleStyleSheet()
         title_style = ParagraphStyle(
             'DocTitle',
@@ -872,8 +880,18 @@ JSON以外のテキストや説明は一切含めないでください。
             textColor=colors.HexColor(COLOR_PALETTE["text_primary"]),
         )
         centered_style = ParagraphStyle('DocCentered', parent=normal_style, alignment=TA_CENTER, fontName=DEFAULT_PDF_FONT)
-        
+
         story = []
+
+        def section_break():
+            line = Table([
+                ['']
+            ], colWidths=[doc.width], style=TableStyle([
+                ('LINEBELOW', (0, 0), (-1, -1), 1, colors.HexColor(COLOR_PALETTE['secondary']))
+            ]))
+            story.append(Spacer(1, 2*mm))
+            story.append(line)
+            story.append(Spacer(1, 2*mm))
 
         # ロゴ
         if logo_path and os.path.exists(logo_path):
@@ -891,6 +909,7 @@ JSON以外のテキストや説明は一切含めないでください。
 
         # 1. エグゼクティブサマリー
         story.append(Paragraph("<u>1. エグゼクティブサマリー</u>", h1_style))
+        section_break()
         story.append(Paragraph(f"<b>対象URL:</b> {self.last_analysis_results['url']}", normal_style))
         
         final_industry = self.last_analysis_results['final_industry']
@@ -911,6 +930,7 @@ JSON以外のテキストや説明は一切含めないでください。
 
         # スコア分布グラフの追加
         story.append(Paragraph("<u>2. スコア分析（視覚化）</u>", h1_style))
+        section_break()
         
         # SEOスコアグラフを生成
         seo_graph_path = self._create_seo_score_graph()
@@ -919,7 +939,7 @@ JSON以外のテキストや説明は一切含めないでください。
             try:
                 seo_img = ReportLabImage(seo_graph_path, width=16*cm, height=8*cm)
                 story.append(seo_img)
-                story.append(Spacer(1, 5*mm))
+                story.append(PageBreak())
             except Exception as e:
                 print(f"SEOグラフ挿入エラー: {e}")
 
@@ -928,9 +948,9 @@ JSON以外のテキストや説明は一切含めないでください。
         if aio_graph_path:
             story.append(Paragraph("AIOスコア分布", h2_style))
             try:
-                aio_img = ReportLabImage(aio_graph_path, width=16*cm, height=12*cm)
+                aio_img = ReportLabImage(aio_graph_path, width=16*cm, height=20*cm)
                 story.append(aio_img)
-                story.append(Spacer(1, 5*mm))
+                story.append(PageBreak())
             except Exception as e:
                 print(f"AIOグラフ挿入エラー: {e}")
 
@@ -938,6 +958,7 @@ JSON以外のテキストや説明は一切含めないでください。
 
         # 3. SEO分析結果
         story.append(Paragraph("<u>3. SEO分析結果</u>", h1_style))
+        section_break()
         seo_res = self.last_analysis_results.get("seo_results", {})
         basics = seo_res.get("basics", {})
         garbled = seo_res.get("garbled", {})
@@ -959,6 +980,7 @@ JSON以外のテキストや説明は一切含めないでください。
 
         # 4. 業界特化分析
         story.append(Paragraph("<u>4. 業界特化分析</u>", h1_style))
+        section_break()
         aio_res = self.last_analysis_results.get("aio_results", {})
         industry_analysis_result = aio_res.get("industry_analysis", {})
         
@@ -980,6 +1002,7 @@ JSON以外のテキストや説明は一切含めないでください。
 
         # 5. 即効改善施策（詳細版）
         story.append(Paragraph("<u>5. 即効改善施策（1-2週間）</u>", h1_style))
+        section_break()
         immediate_actions = aio_res.get("immediate_actions", [])
         for i, action in enumerate(immediate_actions, 1):
             story.append(Paragraph(f"<b>{i}. {safe_str(action.get('action'))}</b>", h2_style))
@@ -989,6 +1012,7 @@ JSON以外のテキストや説明は一切含めないでください。
 
         # 6. 中期戦略施策
         story.append(Paragraph("<u>6. 中期戦略施策（1-3ヶ月）</u>", h1_style))
+        section_break()
         medium_term_strategies = aio_res.get("medium_term_strategies", [])
         for i, strategy in enumerate(medium_term_strategies, 1):
             story.append(Paragraph(f"<b>{i}. {safe_str(strategy.get('strategy'))}</b>", h2_style))
@@ -1000,6 +1024,7 @@ JSON以外のテキストや説明は一切含めないでください。
 
         # 7. 競合差別化ポイント（詳細版）
         story.append(Paragraph("<u>7. 競合差別化ポイント</u>", h1_style))
+        section_break()
         competitive_advantages = aio_res.get("competitive_advantages", [])
         for i, advantage in enumerate(competitive_advantages, 1):
             story.append(Paragraph(f"<b>{i}. {safe_str(advantage.get('advantage'))}</b>", h2_style))
@@ -1008,6 +1033,7 @@ JSON以外のテキストや説明は一切含めないでください。
 
         # 8. 市場トレンド対応戦略（新機能）
         story.append(Paragraph("<u>8. 市場トレンド対応戦略</u>", h1_style))
+        section_break()
         market_trend_strategies = aio_res.get("market_trend_strategies", [])
         if market_trend_strategies:
             for i, trend_strategy in enumerate(market_trend_strategies, 1):
@@ -1020,6 +1046,7 @@ JSON以外のテキストや説明は一切含めないでください。
 
         # 9. 詳細スコア分析
         story.append(Paragraph("<u>9. 詳細スコア分析</u>", h1_style))
+        section_break()
         
         # AIOスコア詳細
         story.append(Paragraph("AIO評価項目詳細", h2_style))
@@ -1047,6 +1074,7 @@ JSON以外のテキストや説明は一切含めないでください。
 
         # 10. 結論と次のステップ
         story.append(Paragraph("<u>10. 結論と次のステップ</u>", h1_style))
+        section_break()
         story.append(Paragraph(
             "本レポートではSEOとAIOの両面から課題を抽出しました。以下の優先アクションに沿って改善を進めてください。",
             normal_style))
@@ -1066,7 +1094,7 @@ JSON以外のテキストや説明は一切含めないでください。
         story.append(Paragraph("最新の市場トレンドと業界動向を反映した分析結果です。", centered_style))
 
         try:
-            doc.build(story)
+            doc.build(story, onFirstPage=add_corner, onLaterPages=add_corner)
             return output_path
         except Exception as e_build:
             print(f"PDFのビルド中にエラーが発生しました: {str(e_build)}")
@@ -1112,7 +1140,7 @@ JSON以外のテキストや説明は一切含めないでください。
             return None
 
     def _create_aio_score_graph(self):
-        """AIOスコアグラフ生成（縦長）"""
+        """AIOスコアグラフ生成（縦長・拡大版）"""
         try:
             if not self.aio_results:
                 return None
@@ -1124,7 +1152,7 @@ JSON以外のテキストや説明は一切含めないでください。
             labels = [AIO_SCORE_MAP_JP.get(k, k.title()) for k in AIO_SCORE_MAP_JP.keys()]
             values = [scores_data.get(k, {"score": 0}).get("score", 0) for k in AIO_SCORE_MAP_JP.keys()]
             
-            fig, ax = plt.subplots(figsize=(10, 12))
+            fig, ax = plt.subplots(figsize=(10, 20))
             bars = ax.barh(labels, values, color=COLOR_PALETTE["primary"], height=0.6)
             ax.set_xlim(0, 10)
             ax.set_xlabel("スコア ( /10)", fontsize=12)
@@ -1200,10 +1228,11 @@ def main():
     # タイトル
     st.title("SEO・AIO統合分析ツール")
     st.markdown(f"*{APP_NAME} v{APP_VERSION} - モダンUIデザイン*")
-    st.markdown(
-        "<div class='explanation-section'>本ツールはSEOとAIOの視点からサイト\n分析を行い、改善ポイントを提示します。\nサイドバーで設定を入力し、結果を確認してください。</div>",
-        unsafe_allow_html=True,
-    )
+    with st.expander("アプリ説明"):
+        st.markdown(
+            "<div class='explanation-section'>本ツールはSEOとAIOの視点からサイト\n分析を行い、改善ポイントを提示します。\nサイドバーで設定を入力し、結果を確認してください。</div>",
+            unsafe_allow_html=True,
+        )
     
     # Analyzerの初期化
     if 'analyzer' not in st.session_state:
@@ -1510,7 +1539,7 @@ def main():
                 st.metric("判定信頼度", f"{final_industry.get('confidence', 0):.1f}%")
                 
             with col2:
-                st.metric("判定根拠", final_industry.get('source', 'N/A'))
+                st.markdown(f"**判定根拠:** {final_industry.get('source', 'N/A')}")
                 if final_industry.get('secondary_detected'):
                     st.write(f"**副業界:** {', '.join(final_industry['secondary_detected'][:3])}")
             
@@ -1593,8 +1622,9 @@ def main():
         st.info("サイドバーからURLを入力して分析を開始してください")
 
         # 機能説明
-        st.markdown("<div class='explanation-section'>", unsafe_allow_html=True)
-        st.markdown("""
+        with st.expander("ツール概要"):
+            st.markdown("<div class='explanation-section'>", unsafe_allow_html=True)
+            st.markdown("""
         ## SEO・AIO統合分析ツールについて
         
         このツールは、従来のSEO分析と最新のAIO（生成AI検索最適化）分析を統合した
@@ -1633,18 +1663,17 @@ def main():
         - **エラーハンドリング**: 詳細なデバッグ情報とエラー回復機能
         - **JSON応答処理**: マークダウン除去・構造抽出による堅牢な解析
         """)
-        
-        # 使用方法
-        with st.expander("使用方法"):
+
             st.markdown("""
-            1. **URL入力**: 分析したいウェブサイトのURLを入力
-            2. **業界指定**: 業界を手動入力するか、自動判定を利用
-            3. **バランス調整**: SEOとAIOの分析比重を調整
-            4. **分析実行**: 「分析開始」ボタンをクリック
-            5. **結果確認**: タブ別に詳細結果を確認
-            6. **レポート生成**: PDFで詳細レポートをダウンロード
+        ### 使用方法
+        1. **URL入力**: 分析したいウェブサイトのURLを入力
+        2. **業界指定**: 業界を手動入力するか、自動判定を利用
+        3. **バランス調整**: SEOとAIOの分析比重を調整
+        4. **分析実行**: 「分析開始」ボタンをクリック
+        5. **結果確認**: タブ別に詳細結果を確認
+        6. **レポート生成**: PDFで詳細レポートをダウンロード
             """)
-        st.markdown("</div>", unsafe_allow_html=True)
+            st.markdown("</div>", unsafe_allow_html=True)
 
 if __name__ == "__main__":
     # 環境変数チェック（システム環境変数優先）
