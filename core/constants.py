@@ -4,22 +4,25 @@
 APP_VERSION = "3.0.0"
 APP_NAME = "SEO・AIO統合分析ツール"
 
-# グレー基調カラーパレット
+# インテル風カラースキーム
 COLOR_PALETTE = {
-    "primary": "#2C2C2C",
-    "secondary": "#3C3C3C",
-    "accent": "#4A9EFF",
-    "background": "#E8E8E8",
-    "surface": "#F5F5F5",
-    "text_primary": "#1A1A1A",
-    "text_secondary": "#4A4A4A",
+    "primary": "#00C7FD",        # Intel Blue
+    "secondary": "#0068B5",      # Intel Dark Blue
+    "accent": "#0068B5",
+    "background": "#FFFFFF",
+    "surface": "#F5F7FA",
+    "text_primary": "#333333",
+    "text_secondary": "#555555",
     "success": "#4CAF50",
-    "warning": "#FF9800",
+    "warning": "#FFC107",
     "error": "#F44336",
     "info": "#2196F3",
     "gold": "#FF8C00",
-    "dark_blue": "#1565C0",
+    "dark_blue": "#0068B5",
 }
+
+# フォント設定
+FONT_STACK = "'Inter', 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif"
 
 # AIOスコアマッピング
 AIO_SCORE_MAP_JP_UPPER = {

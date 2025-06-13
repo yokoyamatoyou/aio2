@@ -116,7 +116,16 @@ try:
 except Exception as e:
     print(f"[DEBUG] .envファイル読み込みエラー（無視）: {e}")
 
-from core.constants import APP_VERSION, APP_NAME, COLOR_PALETTE, AIO_SCORE_MAP_JP, AIO_SCORE_MAP_JP_UPPER, AIO_SCORE_MAP_JP_LOWER
+from core.constants import (
+    APP_VERSION,
+    APP_NAME,
+    COLOR_PALETTE,
+    FONT_STACK,
+    AIO_SCORE_MAP_JP,
+    AIO_SCORE_MAP_JP_UPPER,
+    AIO_SCORE_MAP_JP_LOWER,
+)
+from core.ui_components import load_global_styles, primary_button, text_input
 from core.industry_detector import IndustryDetector, IndustryAnalysis
 from core.visualization import create_score_gauge, create_aio_score_chart_vertical
 
@@ -996,116 +1005,39 @@ JSON以外のテキストや説明は一切含めないでください。
 
 # Streamlitアプリケーション
 def set_custom_css():
-    """グレー基調カスタムCSS"""
-    st.markdown(f"""
-    <style>
-    /* メインテーマ */
-    .stApp {{
-        background-color: {COLOR_PALETTE["background"]};
-        color: {COLOR_PALETTE["text_primary"]};
-    }}
-    
-    /* サイドバー */
-    .css-1d391kg {{
-        background-color: {COLOR_PALETTE["surface"]};
-        border-right: 1px solid {COLOR_PALETTE["secondary"]};
-    }}
-    
-    /* メトリクスカード */
-    [data-testid="metric-container"] {{
-        background-color: {COLOR_PALETTE["surface"]};
-        border: 1px solid {COLOR_PALETTE["secondary"]};
-        padding: 1rem;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }}
-    
-    /* タブ */
-    .stTabs [data-baseweb="tab-list"] {{
-        background-color: {COLOR_PALETTE["surface"]};
-        gap: 8px;
-    }}
-    
-    .stTabs [data-baseweb="tab"] {{
-        background-color: {COLOR_PALETTE["primary"]};
-        color: {COLOR_PALETTE["surface"]};
-        border-radius: 8px 8px 0 0;
-    }}
-    
-    .stTabs [aria-selected="true"] {{
-        background-color: {COLOR_PALETTE["accent"]} !important;
-        color: white !important;
-    }}
-    
-    /* ボタン */
-    .stButton > button {{
-        background-color: {COLOR_PALETTE["accent"]};
-        color: white;
-        border: none;
-        border-radius: 6px;
-        font-weight: bold;
-    }}
-    
-    .stButton > button:hover {{
-        background-color: {COLOR_PALETTE["dark_blue"]};
-        box-shadow: 0 4px 8px rgba(74, 158, 255, 0.3);
-    }}
-    
-    /* プログレスバー */
-    .stProgress .st-bo {{
-        background-color: {COLOR_PALETTE["secondary"]};
-    }}
-    
-    .stProgress .st-bp {{
-        background-color: {COLOR_PALETTE["accent"]};
-    }}
-    
-    /* エクスパンダー */
-    .streamlit-expanderHeader {{
-        background-color: {COLOR_PALETTE["surface"]};
-        color: {COLOR_PALETTE["text_primary"]};
-        border-radius: 8px;
-        border: 1px solid {COLOR_PALETTE["secondary"]};
-    }}
-    
-    /* テキストエリア */
-    .stTextArea textarea {{
-        background-color: white;
-        color: {COLOR_PALETTE["text_primary"]};
-        border: 1px solid {COLOR_PALETTE["secondary"]};
-    }}
-    
-    /* セレクトボックス */
-    .stSelectbox > div > div {{
-        background-color: white;
-        color: {COLOR_PALETTE["text_primary"]};
-    }}
-    
-    /* ヘッダーのカスタマイズ */
-    h1, h2, h3 {{
-        color: {COLOR_PALETTE["dark_blue"]};
-        font-weight: bold;
-    }}
-    
-    /* アラート */
-    .stAlert {{
-        background-color: {COLOR_PALETTE["surface"]};
-        border: 1px solid {COLOR_PALETTE["secondary"]};
-        border-radius: 8px;
-    }}
-    
-    /* データフレーム */
-    .stDataFrame {{
-        background-color: white;
-    }}
-    
-    /* メインコンテンツエリア */
-    .block-container {{
-        background-color: {COLOR_PALETTE["background"]};
-        padding-top: 2rem;
-    }}
-    </style>
-    """, unsafe_allow_html=True)
+    """Apply global design CSS."""
+    load_global_styles()
+    st.markdown(
+        f"""
+        <style>
+        .css-1d391kg {{
+            background-color: {COLOR_PALETTE['surface']};
+            border-right: 1px solid {COLOR_PALETTE['secondary']};
+        }}
+        [data-testid='metric-container'] {{
+            background-color: {COLOR_PALETTE['surface']};
+            border: 1px solid {COLOR_PALETTE['secondary']};
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }}
+        .stTabs [data-baseweb='tab-list'] {{
+            background-color: {COLOR_PALETTE['surface']};
+            gap: 8px;
+        }}
+        .stTabs [data-baseweb='tab'] {{
+            background-color: {COLOR_PALETTE['primary']};
+            color: {COLOR_PALETTE['background']};
+            border-radius: 8px 8px 0 0;
+        }}
+        .stTabs [aria-selected='true'] {{
+            background-color: {COLOR_PALETTE['accent']} !important;
+            color: #fff !important;
+        }}
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
 
 
 def main():
@@ -1159,14 +1091,14 @@ def main():
         st.header("🎯 分析設定")
         
         # URL入力
-        url = st.text_input(
+        url = text_input(
             "分析対象URL",
             placeholder="https://www.example.com",
             help="分析したいウェブサイトのURLを入力してください"
         )
         
         # 業界/分野入力
-        industry = st.text_input(
+        industry = text_input(
             "業界/分野（オプション）",
             placeholder="例: IT, 教育, 不動産",
             help="空白の場合は自動判定されます"
@@ -1184,7 +1116,7 @@ def main():
         st.markdown(f"**現在の設定:** SEO {100-balance}% - AIO {balance}%")
         
         # 業界判定ボタン
-        if st.button("🔍 業界判定のみ", use_container_width=True):
+        if primary_button("🔍 業界判定のみ"):
             if url:
                 with st.spinner("業界を判定中..."):
                     try:
