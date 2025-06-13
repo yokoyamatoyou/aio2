@@ -5,6 +5,8 @@ import time
 import requests
 from bs4 import BeautifulSoup
 import tldextract
+import re
+from collections import Counter
 from datetime import datetime
 from typing import Dict, List, Tuple, Optional
 from urllib.parse import urlparse
@@ -127,7 +129,7 @@ from core.constants import (
 )
 from core.ui_components import load_global_styles, primary_button, text_input
 from core.industry_detector import IndustryDetector, IndustryAnalysis
-from core.visualization import create_score_gauge, create_aio_score_chart_vertical
+from core.visualization import create_aio_score_chart_vertical
 
 class SEOAIOAnalyzer:
     def __init__(self):
@@ -309,11 +311,23 @@ class SEOAIOAnalyzer:
 
         og_description_tag = soup.find('meta', attrs={'property': 'og:description'})
         og_description = og_description_tag['content'].strip() if og_description_tag and og_description_tag.has_attr('content') else ""
+        og_image_tag = soup.find('meta', attrs={'property': 'og:image'})
+        og_image = og_image_tag['content'].strip() if og_image_tag and og_image_tag.has_attr('content') else ""
 
         canonical_tag = soup.find('link', attrs={'rel': 'canonical'})
         canonical_url = canonical_tag['href'].strip() if canonical_tag and canonical_tag.has_attr('href') else ""
 
+        meta_keywords_tag = soup.find('meta', attrs={'name': 'keywords'})
+        meta_keywords = meta_keywords_tag['content'].strip() if meta_keywords_tag and meta_keywords_tag.has_attr('content') else ""
+
+        meta_author_tag = soup.find('meta', attrs={'name': 'author'})
+        meta_author = meta_author_tag['content'].strip() if meta_author_tag and meta_author_tag.has_attr('content') else ""
+
         headings = {f'h{i}': len(soup.find_all(f'h{i}')) for i in range(1, 7)}
+        heading_texts = {
+            f'h{i}': [h.get_text(strip=True) for h in soup.find_all(f'h{i}')][:3]
+            for i in range(1, 4)
+        }
 
         # リンク分析
         all_links = soup.find_all('a', href=True)
@@ -350,19 +364,66 @@ class SEOAIOAnalyzer:
         # 技術的要素
         structured_data_scripts = soup.find_all('script', {'type': 'application/ld+json'})
         has_structured_data = len(structured_data_scripts) > 0
+        structured_data_types = []
+        for sc in structured_data_scripts:
+            try:
+                data = json.loads(sc.string)
+                if isinstance(data, dict) and '@type' in data:
+                    structured_data_types.append(data['@type'])
+                elif isinstance(data, list):
+                    for item in data:
+                        if isinstance(item, dict) and '@type' in item:
+                            structured_data_types.append(item['@type'])
+            except Exception:
+                continue
 
         viewport_tag = soup.find('meta', attrs={'name': 'viewport'})
         has_viewport = viewport_tag is not None
 
+        tech_stack = []
+        generator = ""
+        meta_generator_tag = soup.find('meta', attrs={'name': 'generator'})
+        if meta_generator_tag and meta_generator_tag.has_attr('content'):
+            generator = meta_generator_tag['content'].strip().lower()
+
+        html_code = soup.prettify()
+        html_lower = html_code.lower()
+        if 'wordpress' in generator or 'wp-content' in html_lower:
+            tech_stack.append('WordPress')
+        if 'shopify' in generator or 'shopify' in html_lower:
+            tech_stack.append('Shopify')
+        if 'wix' in generator or 'wixsite' in html_lower:
+            tech_stack.append('Wix')
+
         main_content_text = self._extract_main_content(soup)
         word_count = len(main_content_text.split())
 
-        html_code = soup.prettify()
+        words = re.findall(r'[A-Za-z]{3,}', main_content_text.lower())
+        stop_words = {
+            'the','and','for','with','that','this','you','your','from','are','was','were','have','has','not','but','can','will','his','her','its','she','him','our','out','use','using'
+        }
+        filtered = [w for w in words if w not in stop_words]
+        freq = Counter(filtered)
+        top_keywords = freq.most_common(10)
+
         text_content_all = soup.get_text(separator=' ', strip=True)
         text_html_ratio = (len(text_content_all) / max(len(html_code), 1)) * 100 if html_code else 0
 
         meta_tags_count = len(soup.find_all('meta'))
         page_size_kb = len(html_code.encode('utf-8', errors='ignore')) / 1024 if html_code else 0
+
+        personalization = {
+            "meta": {
+                "description": description,
+                "keywords": meta_keywords,
+                "author": meta_author,
+            },
+            "ogp": {"title": og_title, "description": og_description, "image": og_image},
+            "headings_content": heading_texts,
+            "structured_data_types": structured_data_types,
+            "top_keywords": top_keywords,
+            "tech_stack": tech_stack,
+        }
 
         # スコア計算
         scores = {
@@ -386,6 +447,7 @@ class SEOAIOAnalyzer:
                           "canonical_url": canonical_url, "has_viewport": has_viewport,
                           "meta_tags_count": meta_tags_count, "page_size_kb": page_size_kb},
             "content": {"word_count": word_count, "text_html_ratio": text_html_ratio},
+            "personalization": personalization,
             "scores": scores, "total_score": total_score,
         }
 
@@ -1169,34 +1231,19 @@ def main():
         with tab1:  # 概要
             st.header("📊 分析概要")
             
-            # スコア表示
+            # スコア表示（メーター削除）
             col1, col2, col3 = st.columns(3)
-            
+
             integrated_results = results.get("integrated_results", {})
-            
+
             with col1:
-                fig_seo = create_score_gauge(
-                    integrated_results.get('seo_score', 0), 
-                    "SEOスコア", 
-                    COLOR_PALETTE["info"]
-                )
-                st.plotly_chart(fig_seo, use_container_width=True)
-            
+                st.metric("SEOスコア", f"{integrated_results.get('seo_score', 0):.1f}/100")
+
             with col2:
-                fig_aio = create_score_gauge(
-                    integrated_results.get('aio_score', 0), 
-                    "AIOスコア", 
-                    COLOR_PALETTE["accent"]
-                )
-                st.plotly_chart(fig_aio, use_container_width=True)
-            
+                st.metric("AIOスコア", f"{integrated_results.get('aio_score', 0):.1f}/100")
+
             with col3:
-                fig_total = create_score_gauge(
-                    integrated_results.get('integrated_score', 0), 
-                    "総合スコア", 
-                    COLOR_PALETTE["gold"]
-                )
-                st.plotly_chart(fig_total, use_container_width=True)
+                st.metric("総合スコア", f"{integrated_results.get('integrated_score', 0):.1f}/100")
             
             # 推奨改善ポイント
             st.subheader("🎯 推奨改善ポイント")
@@ -1314,6 +1361,37 @@ def main():
                 st.metric("ビューポートタグ", "あり" if technical.get('has_viewport') else "なし")  
             with col3:
                 st.metric("ページサイズ", f"{technical.get('page_size_kb', 0):.1f} KB")
+
+            # パーソナライズ情報
+            personalization = seo_results.get("personalization", {})
+            if personalization:
+                st.subheader("🔍 パーソナライズ情報")
+                meta = personalization.get("meta", {})
+                st.write(f"**Meta Description:** {meta.get('description', 'N/A')}")
+                if meta.get('keywords'):
+                    st.write(f"**Meta Keywords:** {meta.get('keywords')}")
+                if meta.get('author'):
+                    st.write(f"**Author:** {meta.get('author')}")
+
+                ogp = personalization.get("ogp", {})
+                if any(ogp.values()):
+                    st.write("**OGP情報**")
+                    st.write(f"Title: {ogp.get('title','N/A')}")
+                    st.write(f"Description: {ogp.get('description','N/A')}")
+                    st.write(f"Image: {ogp.get('image','N/A')}")
+
+                headings_c = personalization.get("headings_content", {})
+                for h, texts in headings_c.items():
+                    if texts:
+                        st.write(f"**{h.upper()}例:** " + ", ".join(texts))
+
+                if personalization.get("top_keywords"):
+                    st.write("**主要キーワード頻度**")
+                    for w,c in personalization["top_keywords"]:
+                        st.write(f"{w}: {c}")
+
+                if personalization.get("tech_stack"):
+                    st.write("**使用技術の手がかり:** " + ", ".join(personalization["tech_stack"]))
         
         with tab4:  # 業界分析
             st.header("🏭 業界特化分析")
