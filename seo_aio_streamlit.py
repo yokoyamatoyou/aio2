@@ -49,8 +49,17 @@ try:
     from reportlab.lib.pagesizes import A4
     from reportlab.lib import colors
     from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image as ReportLabImage
-    from reportlab.platypus import Table, TableStyle, PageBreak, ListFlowable, ListItem
+    from reportlab.platypus import (
+        SimpleDocTemplate,
+        Paragraph,
+        Spacer,
+        Image as ReportLabImage,
+        Table,
+        TableStyle,
+        PageBreak,
+        ListFlowable,
+        ListItem,
+    )
     from reportlab.lib.units import mm, cm
     from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
     from reportlab.pdfbase import pdfmetrics
@@ -132,6 +141,32 @@ from core.ui_components import load_global_styles, primary_button, text_input
 from core.industry_detector import IndustryDetector, IndustryAnalysis
 from core.visualization import create_aio_score_chart_vertical
 from core.text_utils import detect_mojibake
+
+
+def add_corner(canvas, doc_obj) -> None:
+    """Draw a small blue square on page corners."""
+    canvas.saveState()
+    canvas.setFillColor(colors.HexColor(COLOR_PALETTE["primary"]))
+    x = doc_obj.pagesize[0] - 25
+    y = doc_obj.pagesize[1] - 25
+    canvas.rect(x, y, 15, 15, fill=1, stroke=0)
+    canvas.restoreState()
+
+
+def section_break(story, width) -> None:
+    """Insert a thin divider line."""
+    line = Table(
+        [[""]],
+        colWidths=[width],
+        style=TableStyle(
+            [
+                ("LINEBELOW", (0, 0), (-1, -1), 1, colors.HexColor(COLOR_PALETTE["secondary"]))
+            ]
+        ),
+    )
+    story.append(Spacer(1, 2 * mm))
+    story.append(line)
+    story.append(Spacer(1, 2 * mm))
 
 
 
@@ -834,13 +869,6 @@ JSON以外のテキストや説明は一切含めないでください。
             topMargin=1.5*cm, bottomMargin=1.5*cm
         )
 
-        def add_corner(canvas, doc_obj):
-            canvas.saveState()
-            canvas.setFillColor(colors.HexColor(COLOR_PALETTE['primary']))
-            x = doc_obj.pagesize[0] - 25
-            y = doc_obj.pagesize[1] - 25
-            canvas.rect(x, y, 15, 15, fill=1, stroke=0)
-            canvas.restoreState()
 
         styles = getSampleStyleSheet()
         title_style = ParagraphStyle(
@@ -883,15 +911,6 @@ JSON以外のテキストや説明は一切含めないでください。
 
         story = []
 
-        def section_break():
-            line = Table([
-                ['']
-            ], colWidths=[doc.width], style=TableStyle([
-                ('LINEBELOW', (0, 0), (-1, -1), 1, colors.HexColor(COLOR_PALETTE['secondary']))
-            ]))
-            story.append(Spacer(1, 2*mm))
-            story.append(line)
-            story.append(Spacer(1, 2*mm))
 
         # ロゴ
         if logo_path and os.path.exists(logo_path):
@@ -909,7 +928,7 @@ JSON以外のテキストや説明は一切含めないでください。
 
         # 1. エグゼクティブサマリー
         story.append(Paragraph("<u>1. エグゼクティブサマリー</u>", h1_style))
-        section_break()
+        section_break(story, doc.width)
         story.append(Paragraph(f"<b>対象URL:</b> {self.last_analysis_results['url']}", normal_style))
         
         final_industry = self.last_analysis_results['final_industry']
@@ -930,7 +949,7 @@ JSON以外のテキストや説明は一切含めないでください。
 
         # スコア分布グラフの追加
         story.append(Paragraph("<u>2. スコア分析（視覚化）</u>", h1_style))
-        section_break()
+        section_break(story, doc.width)
         
         # SEOスコアグラフを生成
         seo_graph_path = self._create_seo_score_graph()
@@ -958,7 +977,7 @@ JSON以外のテキストや説明は一切含めないでください。
 
         # 3. SEO分析結果
         story.append(Paragraph("<u>3. SEO分析結果</u>", h1_style))
-        section_break()
+        section_break(story, doc.width)
         seo_res = self.last_analysis_results.get("seo_results", {})
         basics = seo_res.get("basics", {})
         garbled = seo_res.get("garbled", {})
@@ -980,7 +999,7 @@ JSON以外のテキストや説明は一切含めないでください。
 
         # 4. 業界特化分析
         story.append(Paragraph("<u>4. 業界特化分析</u>", h1_style))
-        section_break()
+        section_break(story, doc.width)
         aio_res = self.last_analysis_results.get("aio_results", {})
         industry_analysis_result = aio_res.get("industry_analysis", {})
         
@@ -1002,7 +1021,7 @@ JSON以外のテキストや説明は一切含めないでください。
 
         # 5. 即効改善施策（詳細版）
         story.append(Paragraph("<u>5. 即効改善施策（1-2週間）</u>", h1_style))
-        section_break()
+        section_break(story, doc.width)
         immediate_actions = aio_res.get("immediate_actions", [])
         for i, action in enumerate(immediate_actions, 1):
             story.append(Paragraph(f"<b>{i}. {safe_str(action.get('action'))}</b>", h2_style))
@@ -1012,7 +1031,7 @@ JSON以外のテキストや説明は一切含めないでください。
 
         # 6. 中期戦略施策
         story.append(Paragraph("<u>6. 中期戦略施策（1-3ヶ月）</u>", h1_style))
-        section_break()
+        section_break(story, doc.width)
         medium_term_strategies = aio_res.get("medium_term_strategies", [])
         for i, strategy in enumerate(medium_term_strategies, 1):
             story.append(Paragraph(f"<b>{i}. {safe_str(strategy.get('strategy'))}</b>", h2_style))
@@ -1024,7 +1043,7 @@ JSON以外のテキストや説明は一切含めないでください。
 
         # 7. 競合差別化ポイント（詳細版）
         story.append(Paragraph("<u>7. 競合差別化ポイント</u>", h1_style))
-        section_break()
+        section_break(story, doc.width)
         competitive_advantages = aio_res.get("competitive_advantages", [])
         for i, advantage in enumerate(competitive_advantages, 1):
             story.append(Paragraph(f"<b>{i}. {safe_str(advantage.get('advantage'))}</b>", h2_style))
@@ -1033,7 +1052,7 @@ JSON以外のテキストや説明は一切含めないでください。
 
         # 8. 市場トレンド対応戦略（新機能）
         story.append(Paragraph("<u>8. 市場トレンド対応戦略</u>", h1_style))
-        section_break()
+        section_break(story, doc.width)
         market_trend_strategies = aio_res.get("market_trend_strategies", [])
         if market_trend_strategies:
             for i, trend_strategy in enumerate(market_trend_strategies, 1):
@@ -1046,7 +1065,7 @@ JSON以外のテキストや説明は一切含めないでください。
 
         # 9. 詳細スコア分析
         story.append(Paragraph("<u>9. 詳細スコア分析</u>", h1_style))
-        section_break()
+        section_break(story, doc.width)
         
         # AIOスコア詳細
         story.append(Paragraph("AIO評価項目詳細", h2_style))
@@ -1074,7 +1093,7 @@ JSON以外のテキストや説明は一切含めないでください。
 
         # 10. 結論と次のステップ
         story.append(Paragraph("<u>10. 結論と次のステップ</u>", h1_style))
-        section_break()
+        section_break(story, doc.width)
         story.append(Paragraph(
             "本レポートではSEOとAIOの両面から課題を抽出しました。以下の優先アクションに沿って改善を進めてください。",
             normal_style))
@@ -1322,7 +1341,7 @@ def main():
                 st.warning("URLを入力してください")
         
         # 分析実行ボタン
-        analyze_clicked = st.button("分析開始", use_container_width=True, type="primary")
+        analyze_clicked = primary_button("分析開始")
     
     # メインエリア
     if analyze_clicked and url:
