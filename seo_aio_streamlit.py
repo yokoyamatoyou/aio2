@@ -213,6 +213,16 @@ class SEOAIOAnalyzer:
         self.seo_results = None
         self.aio_results = None
 
+    def _scale_to_100(self, value: float) -> float:
+        """Normalize a score to 0-100 range."""
+        if not isinstance(value, (int, float)):
+            return 0.0
+        if 0 <= value <= 10:
+            return value * 10
+        if value > 100:
+            return 100.0
+        return float(value)
+
     def analyze_url(self, url, user_industry, balance=50):
         try:
             if not url.startswith(('http://', 'https://')):
@@ -766,11 +776,19 @@ JSON以外のテキストや説明は一切含めないでください。
                 normalized_result["scores"][key_score] = aio_analysis.get("scores", {}).get(key_score, default_score_advice.copy())
 
             # total_scoreの検証
-            if not isinstance(normalized_result["total_score"], (int, float)):
+            ts = normalized_result["total_score"]
+            if not isinstance(ts, (int, float)):
                 try:
-                    normalized_result["total_score"] = float(normalized_result["total_score"])
+                    ts = float(ts)
                 except (ValueError, TypeError):
-                    normalized_result["total_score"] = 0.0
+                    ts = 0.0
+            normalized_result["total_score"] = self._scale_to_100(ts)
+
+            # category_scoresのスケール調整
+            categories = {}
+            for cat, val in normalized_result.get("category_scores", {}).items():
+                categories[cat] = self._scale_to_100(val)
+            normalized_result["category_scores"] = categories
 
             return normalized_result
 
@@ -803,12 +821,13 @@ JSON以外のテキストや説明は一切含めないでください。
         """統合結果の計算"""
         seo_score = seo_results.get("total_score", 0.0)
         aio_total_score = aio_results.get("total_score", 0.0)
-        
+
         if not isinstance(aio_total_score, (int, float)):
             try:
                 aio_total_score = float(aio_total_score)
             except (ValueError, TypeError):
                 aio_total_score = 0.0
+        aio_total_score = self._scale_to_100(aio_total_score)
 
         integrated_score = seo_score * seo_weight + aio_total_score * aio_weight
 
