@@ -1,1 +1,28 @@
 # aio2
+
+This repository contains a Streamlit application for combined SEO and AIO (AI search optimization) analysis.
+
+## Usage
+
+1. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+   *(Streamlit, Plotly, ReportLab and other libraries are required)*
+
+2. Set your OpenAI API key via environment variable `OPENAI_API_KEY` or by creating a `.env` file.
+
+3. Launch the application:
+   ```bash
+   streamlit run seo_aio_streamlit.py
+   ```
+
+## Modules
+
+The code has been modularized:
+
+- `core/constants.py` – application constants and color settings.
+- `core/industry_detector.py` – industry detection utilities.
+- `core/visualization.py` – helper functions for charts.
+
+The main `seo_aio_streamlit.py` script imports these modules.
