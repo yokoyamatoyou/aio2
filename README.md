@@ -43,8 +43,8 @@ The main `seo_aio_streamlit.py` script imports these modules.
 
 ## Design Guidelines
 
-The interface uses an Intel-inspired palette:
+- The interface uses an Intel-inspired palette:
 
-- **Primary:** `#00C7FD` (Intel Blue)
-- **Secondary:** `#0068B5`
+  - **Primary:** `#00C7FD` (Intel Blue)
+  - **Secondary:** unified with the primary color for clarity
 - Icons rely on simple geometric pictograms without illustrations.
