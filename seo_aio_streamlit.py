@@ -126,6 +126,7 @@ from core.constants import (
     AIO_SCORE_MAP_JP,
     AIO_SCORE_MAP_JP_UPPER,
     AIO_SCORE_MAP_JP_LOWER,
+    SEO_SCORE_LABELS,
 )
 from core.ui_components import load_global_styles, primary_button, text_input
 from core.industry_detector import IndustryDetector, IndustryAnalysis
@@ -878,6 +879,11 @@ JSON以外のテキストや説明は一切含めないでください。
         story.append(Paragraph(f"<b>SEOスコア:</b> {integrated_results.get('seo_score',0.0):.1f}/100", normal_style))
         story.append(Paragraph(f"<b>AIOスコア:</b> {integrated_results.get('aio_score',0.0):.1f}/100", normal_style))
         story.append(Paragraph(f"<b>主要改善領域:</b> {integrated_results.get('primary_focus', 'N/A')}", normal_style))
+
+        improvements = integrated_results.get('improvements', [])[:3]
+        if improvements:
+            bullet_items = [ListItem(Paragraph(imp, normal_style)) for imp in improvements]
+            story.append(ListFlowable(bullet_items, bulletType='bullet'))
         story.append(Spacer(1, 5*mm))
 
         # スコア分布グラフの追加
@@ -922,6 +928,9 @@ JSON以外のテキストや説明は一切含めないでください。
         story.append(Paragraph(f"<b>メタディスクリプション:</b> {desc_txt}", normal_style))
         story.append(Paragraph(f"<b>タイトル文字数:</b> {basics.get('title_length',0)}", normal_style))
         story.append(Paragraph(f"<b>ディスクリプション文字数:</b> {basics.get('meta_description_length',0)}", normal_style))
+        story.append(Paragraph(
+            "これらのスコアは検索結果での表示最適化に影響します。値が低い項目は優先的に調整してください。",
+            normal_style))
 
         story.append(PageBreak())
 
@@ -1011,6 +1020,23 @@ JSON以外のテキストや説明は一切含めないでください。
             story.append(Paragraph(f"{score_item.get('advice','N/A')}", normal_style))
             story.append(Spacer(1, 2*mm))
 
+        story.append(PageBreak())
+
+        # 10. 結論と次のステップ
+        story.append(Paragraph("<u>10. 結論と次のステップ</u>", h1_style))
+        story.append(Paragraph(
+            "本レポートではSEOとAIOの両面から課題を抽出しました。以下の優先アクションに沿って改善を進めてください。",
+            normal_style))
+
+        all_actions = integrated_results.get('improvements', [])
+        if all_actions:
+            bullet_items = [ListItem(Paragraph(act, normal_style)) for act in all_actions]
+            story.append(ListFlowable(bullet_items, bulletType='bullet'))
+
+        story.append(Paragraph(
+            "施策実施後は再度分析を行い、数値改善を確認することを推奨します。",
+            normal_style))
+
         # フッター
         story.append(Spacer(1, 10*mm))
         story.append(Paragraph(f"このレポートは{APP_NAME} v{APP_VERSION}によって生成されました。", centered_style))
@@ -1035,7 +1061,7 @@ JSON以外のテキストや説明は一切含めないでください。
             if not scores:
                 return None
                 
-            labels = [k.replace("_score", "").replace("_", " ").title() for k in scores.keys()]
+            labels = [SEO_SCORE_LABELS.get(k, k.replace("_score", "").title()) for k in scores.keys()]
             values = list(scores.values())
             
             fig, ax = plt.subplots(figsize=(10, 6))
@@ -1344,7 +1370,7 @@ def main():
             # SEOスコア分布グラフ
             seo_scores = seo_results.get("scores", {})
             if seo_scores:
-                labels = [k.replace("_score", "").replace("_", " ").title() for k in seo_scores.keys()]
+                labels = [SEO_SCORE_LABELS.get(k, k.replace("_score", "").title()) for k in seo_scores.keys()]
                 values = list(seo_scores.values())
                 
                 fig_seo_detail = go.Figure(data=[go.Bar(
@@ -1352,7 +1378,8 @@ def main():
                     y=values,
                     marker=dict(color=COLOR_PALETTE["info"]),
                     text=[f'{v:.1f}' for v in values],
-                    textposition='outside'
+                    textposition='outside',
+                    hovertemplate='%{x}：%{y:.1f}点'
                 )])
                 
                 fig_seo_detail.update_layout(
@@ -1361,6 +1388,7 @@ def main():
                     paper_bgcolor=COLOR_PALETTE["background"],
                     plot_bgcolor=COLOR_PALETTE["background"],
                     font={'color': COLOR_PALETTE["text_primary"]},
+                    hoverlabel=dict(font_size=12),
                     yaxis=dict(range=[0, 10], title="スコア (/10)"),
                     xaxis=dict(title="評価項目")
                 )

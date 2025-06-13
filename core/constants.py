@@ -48,3 +48,14 @@ AIO_SCORE_MAP_JP_LOWER = {
 }
 
 AIO_SCORE_MAP_JP = {**AIO_SCORE_MAP_JP_UPPER, **AIO_SCORE_MAP_JP_LOWER}
+
+# SEOスコア項目ラベル（日本語）
+SEO_SCORE_LABELS = {
+    "title_score": "タイトル",
+    "meta_description_score": "メタディスクリプション",
+    "headings_score": "見出し構造",
+    "content_score": "コンテンツ",
+    "links_score": "リンク",
+    "images_score": "画像",
+    "technical_score": "技術要素",
+}
