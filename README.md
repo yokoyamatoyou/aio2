@@ -16,6 +16,10 @@ This repository contains a Streamlit application for combined SEO and AIO (AI se
    ```bash
    streamlit run seo_aio_streamlit.py
    ```
+4. Run a quick syntax check (optional but recommended):
+   ```bash
+   python -m py_compile $(git ls-files '*.py')
+   ```
 
 ## Modules
 

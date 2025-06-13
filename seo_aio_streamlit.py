@@ -131,6 +131,18 @@ from core.ui_components import load_global_styles, primary_button, text_input
 from core.industry_detector import IndustryDetector, IndustryAnalysis
 from core.visualization import create_aio_score_chart_vertical
 
+
+def detect_mojibake(text: str) -> bool:
+    """Heuristic check for garbled Japanese text."""
+    if not text:
+        return False
+    suspicious_sequences = ["Ã", "Â", "�"]
+    if any(seq in text for seq in suspicious_sequences):
+        return True
+    valid = re.compile(r"[\u0020-\u007E\u3000-\u30FF\u4E00-\u9FFF]+")
+    valid_count = sum(1 for ch in text if valid.match(ch))
+    return valid_count / len(text) < 0.7
+
 class SEOAIOAnalyzer:
     def __init__(self):
         # 環境変数から直接取得（システム環境変数優先）
@@ -306,6 +318,9 @@ class SEOAIOAnalyzer:
         meta_description_tag = soup.find('meta', attrs={'name': 'description'})
         description = meta_description_tag['content'].strip() if meta_description_tag and meta_description_tag.has_attr('content') else ""
 
+        garbled_title = detect_mojibake(title)
+        garbled_description = detect_mojibake(description)
+
         og_title_tag = soup.find('meta', attrs={'property': 'og:title'})
         og_title = og_title_tag['content'].strip() if og_title_tag and og_title_tag.has_attr('content') else ""
 
@@ -449,6 +464,7 @@ class SEOAIOAnalyzer:
             "content": {"word_count": word_count, "text_html_ratio": text_html_ratio},
             "personalization": personalization,
             "scores": scores, "total_score": total_score,
+            "garbled": {"title": garbled_title, "meta_description": garbled_description},
         }
 
     # SEOスコア計算メソッド群
@@ -889,10 +905,28 @@ JSON以外のテキストや説明は一切含めないでください。
             except Exception as e:
                 print(f"AIOグラフ挿入エラー: {e}")
 
+        story.append(Spacer(1, 5*mm))
+
+        # 3. SEO分析結果
+        story.append(Paragraph("<u>3. SEO分析結果</u>", h1_style))
+        seo_res = self.last_analysis_results.get("seo_results", {})
+        basics = seo_res.get("basics", {})
+        garbled = seo_res.get("garbled", {})
+        title_txt = safe_str(basics.get('title'))
+        if garbled.get('title'):
+            title_txt += " (文字化けの可能性あり)"
+        story.append(Paragraph(f"<b>タイトル:</b> {title_txt}", normal_style))
+        desc_txt = safe_str(basics.get('meta_description'))
+        if garbled.get('meta_description'):
+            desc_txt += " (文字化けの可能性あり)"
+        story.append(Paragraph(f"<b>メタディスクリプション:</b> {desc_txt}", normal_style))
+        story.append(Paragraph(f"<b>タイトル文字数:</b> {basics.get('title_length',0)}", normal_style))
+        story.append(Paragraph(f"<b>ディスクリプション文字数:</b> {basics.get('meta_description_length',0)}", normal_style))
+
         story.append(PageBreak())
 
-        # 3. 業界特化分析
-        story.append(Paragraph("<u>3. 業界特化分析</u>", h1_style))
+        # 4. 業界特化分析
+        story.append(Paragraph("<u>4. 業界特化分析</u>", h1_style))
         aio_res = self.last_analysis_results.get("aio_results", {})
         industry_analysis_result = aio_res.get("industry_analysis", {})
         
@@ -912,8 +946,8 @@ JSON以外のテキストや説明は一切含めないでください。
             story.append(Paragraph(f"<b>規制対応状況:</b>", h2_style))
             story.append(Paragraph(f"{safe_str(industry_analysis_result.get('compliance_check'))}", normal_style))
 
-        # 4. 即効改善施策（詳細版）
-        story.append(Paragraph("<u>4. 即効改善施策（1-2週間）</u>", h1_style))
+        # 5. 即効改善施策（詳細版）
+        story.append(Paragraph("<u>5. 即効改善施策（1-2週間）</u>", h1_style))
         immediate_actions = aio_res.get("immediate_actions", [])
         for i, action in enumerate(immediate_actions, 1):
             story.append(Paragraph(f"<b>{i}. {safe_str(action.get('action'))}</b>", h2_style))
@@ -921,8 +955,8 @@ JSON以外のテキストや説明は一切含めないでください。
             story.append(Paragraph(f"<b>期待効果:</b> {safe_str(action.get('expected_impact'))}", normal_style))
             story.append(Spacer(1, 3*mm))
 
-        # 5. 中期戦略施策
-        story.append(Paragraph("<u>5. 中期戦略施策（1-3ヶ月）</u>", h1_style))
+        # 6. 中期戦略施策
+        story.append(Paragraph("<u>6. 中期戦略施策（1-3ヶ月）</u>", h1_style))
         medium_term_strategies = aio_res.get("medium_term_strategies", [])
         for i, strategy in enumerate(medium_term_strategies, 1):
             story.append(Paragraph(f"<b>{i}. {safe_str(strategy.get('strategy'))}</b>", h2_style))
@@ -932,16 +966,16 @@ JSON以外のテキストや説明は一切含めないでください。
 
         story.append(PageBreak())
 
-        # 6. 競合差別化ポイント（詳細版）
-        story.append(Paragraph("<u>6. 競合差別化ポイント</u>", h1_style))
+        # 7. 競合差別化ポイント（詳細版）
+        story.append(Paragraph("<u>7. 競合差別化ポイント</u>", h1_style))
         competitive_advantages = aio_res.get("competitive_advantages", [])
         for i, advantage in enumerate(competitive_advantages, 1):
             story.append(Paragraph(f"<b>{i}. {safe_str(advantage.get('advantage'))}</b>", h2_style))
             story.append(Paragraph(f"<b>実装方法:</b> {safe_str(advantage.get('implementation'))}", normal_style))
             story.append(Spacer(1, 3*mm))
 
-        # 7. 市場トレンド対応戦略（新機能）
-        story.append(Paragraph("<u>7. 市場トレンド対応戦略</u>", h1_style))
+        # 8. 市場トレンド対応戦略（新機能）
+        story.append(Paragraph("<u>8. 市場トレンド対応戦略</u>", h1_style))
         market_trend_strategies = aio_res.get("market_trend_strategies", [])
         if market_trend_strategies:
             for i, trend_strategy in enumerate(market_trend_strategies, 1):
@@ -952,8 +986,8 @@ JSON以外のテキストや説明は一切含めないでください。
         else:
             story.append(Paragraph("市場トレンド分析データが利用できません。", normal_style))
 
-        # 8. 詳細スコア分析
-        story.append(Paragraph("<u>8. 詳細スコア分析</u>", h1_style))
+        # 9. 詳細スコア分析
+        story.append(Paragraph("<u>9. 詳細スコア分析</u>", h1_style))
         
         # AIOスコア詳細
         story.append(Paragraph("AIO評価項目詳細", h2_style))
@@ -1339,8 +1373,16 @@ def main():
             with col1:
                 st.subheader("📋 基本SEO情報")
                 basics = seo_results.get("basics", {})
-                st.write(f"**タイトル:** {basics.get('title', 'N/A')} ({basics.get('title_length', 0)}文字)")
-                st.write(f"**メタディスクリプション:** {basics.get('meta_description', 'N/A')} ({basics.get('meta_description_length', 0)}文字)")
+                garbled = seo_results.get("garbled", {})
+                title_txt = basics.get('title', 'N/A')
+                if garbled.get('title'):
+                    st.error("タイトルが文字化けしている可能性があります")
+                st.write(f"**タイトル:** {title_txt} ({basics.get('title_length', 0)}文字)")
+
+                desc_txt = basics.get('meta_description', 'N/A')
+                if garbled.get('meta_description'):
+                    st.error("メタディスクリプションが文字化けしている可能性があります")
+                st.write(f"**メタディスクリプション:** {desc_txt} ({basics.get('meta_description_length', 0)}文字)")
                 
             with col2:
                 st.subheader("🔗 ページ構造")
