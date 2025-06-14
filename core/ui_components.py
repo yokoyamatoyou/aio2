@@ -22,15 +22,16 @@ def load_global_styles() -> None:
             font-weight: 400;
         }}
         .primary-button > button {{
-            background-color: {COLOR_PALETTE['primary']};
-            color: white;
-            border: none;
-            border-radius: 4px;
+            background-color: {COLOR_PALETTE['primary']} !important;
+            color: white !important;
+            border: none !important;
+            border-radius: 4px !important;
             padding: 0.4rem 1rem;
             font-weight: 400;
         }}
         .primary-button > button:hover {{
-            background-color: {COLOR_PALETTE['primary']};
+            background-color: {COLOR_PALETTE['primary']} !important;
+            color: white !important;
         }}
         .input-block {{
             background-color: #f0f2f6;
@@ -64,6 +65,14 @@ def load_global_styles() -> None:
         }}
         .stTabs [data-baseweb='tab'] {{
             min-width: 130px;
+        }}
+        /* Slider color adjustments */
+        [data-baseweb='slider'] [role='slider'] {{
+            background-color: {COLOR_PALETTE['primary']} !important;
+            border-color: {COLOR_PALETTE['primary']} !important;
+        }}
+        [data-baseweb='slider'] > div > div {{
+            background-color: {COLOR_PALETTE['primary']} !important;
         }}
         </style>
         """,
