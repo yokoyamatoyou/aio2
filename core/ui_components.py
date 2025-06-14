@@ -73,7 +73,16 @@ def load_global_styles() -> None:
 
 def primary_button(label: str, key: Optional[str] = None) -> bool:
     """Create a styled primary button."""
-    return st.button(label, key=key, use_container_width=True, help=label, type="primary",)
+    st.markdown("<div class='primary-button'>", unsafe_allow_html=True)
+    clicked = st.button(
+        label,
+        key=key,
+        use_container_width=True,
+        help=label,
+        type="primary",
+    )
+    st.markdown("</div>", unsafe_allow_html=True)
+    return clicked
 
 
 def text_input(label: str, key: Optional[str] = None, **kwargs: Any) -> str:
