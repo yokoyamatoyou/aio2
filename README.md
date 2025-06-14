@@ -48,3 +48,5 @@ The main `seo_aio_streamlit.py` script imports these modules.
   - **Primary:** `#00C7FD` (Intel Blue)
   - **Secondary:** unified with the primary color for clarity
 - Icons rely on simple geometric pictograms without illustrations.
+- Typography follows `'Noto Sans JP', 'Meiryo', 'Hiragino Kaku Gothic ProN', 'Inter'` with light weights (300–400).
+- Sections are separated by thin dividers for a clean layout.

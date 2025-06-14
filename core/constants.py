@@ -19,6 +19,7 @@ COLOR_PALETTE = {
     "info": "#2196F3",
     "gold": "#FF8C00",
     "dark_blue": "#00C7FD",
+    "divider": "#E0E0E0",
 }
 
 # フォント設定

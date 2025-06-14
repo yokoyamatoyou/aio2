@@ -18,6 +18,9 @@ def load_global_styles() -> None:
             font-size: 16px;
             font-weight: 300;
         }}
+        h1, h2, h3, h4 {{
+            font-weight: 400;
+        }}
         .primary-button > button {{
             background-color: {COLOR_PALETTE['primary']};
             color: white;
@@ -44,7 +47,7 @@ def load_global_styles() -> None:
         .function-section {{
             background-color: {COLOR_PALETTE['surface']};
             padding: 1rem;
-            border: 1px solid {COLOR_PALETTE['secondary']};
+            border: 1px solid {COLOR_PALETTE['divider']};
             border-radius: 8px;
             margin-bottom: 1rem;
         }}
