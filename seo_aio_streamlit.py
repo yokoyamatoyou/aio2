@@ -101,7 +101,22 @@ try:
         if not found_font_mac:
             DEFAULT_PDF_FONT = 'Helvetica'
     else:
-        DEFAULT_PDF_FONT = 'Helvetica'
+        font_paths_noto = [
+            '/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc',
+            '/usr/share/fonts/truetype/noto/NotoSansCJKjp-Regular.otf',
+        ]
+        found_font_linux = False
+        for p in font_paths_noto:
+            if os.path.exists(p):
+                try:
+                    pdfmetrics.registerFont(TTFont('NotoSansJP', p))
+                    DEFAULT_PDF_FONT = 'NotoSansJP'
+                    found_font_linux = True
+                    break
+                except Exception as e_font_linux:
+                    print(f"Notoフォント登録試行エラー ({p}): {e_font_linux}")
+        if not found_font_linux:
+            DEFAULT_PDF_FONT = 'Helvetica'
 except Exception as font_error:
     print(f"日本語フォントの登録に失敗しました: {font_error}")
     DEFAULT_PDF_FONT = 'Helvetica'
@@ -160,7 +175,7 @@ def section_break(story, width) -> None:
         colWidths=[width],
         style=TableStyle(
             [
-                ("LINEBELOW", (0, 0), (-1, -1), 1, colors.HexColor(COLOR_PALETTE["secondary"]))
+                ("LINEBELOW", (0, 0), (-1, -1), 0.5, colors.HexColor(COLOR_PALETTE["divider"]))
             ]
         ),
     )
@@ -883,9 +898,12 @@ JSON以外のテキストや説明は一切含めないでください。
             return str(value) if value is not None else default
 
         doc = SimpleDocTemplate(
-            output_path, pagesize=A4,
-            rightMargin=1.5*cm, leftMargin=1.5*cm,
-            topMargin=1.5*cm, bottomMargin=1.5*cm
+            output_path,
+            pagesize=A4,
+            rightMargin=2*cm,
+            leftMargin=2*cm,
+            topMargin=2*cm,
+            bottomMargin=2*cm,
         )
 
 
@@ -1223,11 +1241,11 @@ def set_custom_css():
         <style>
         .css-1d391kg {{
             background-color: {COLOR_PALETTE['surface']};
-            border-right: 1px solid {COLOR_PALETTE['secondary']};
+            border-right: 1px solid {COLOR_PALETTE['divider']};
         }}
         [data-testid='metric-container'] {{
             background-color: {COLOR_PALETTE['surface']};
-            border: 1px solid {COLOR_PALETTE['secondary']};
+            border: 1px solid {COLOR_PALETTE['divider']};
             padding: 1rem;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
