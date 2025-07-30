@@ -18,6 +18,11 @@ class TestIndustryDetector(unittest.TestCase):
         industry = detect_industry(text)
         self.assertEqual(industry, "restaurant")
 
+    def test_detect_industry_real_estate(self):
+        text = "マンションや戸建ての売買をサポートする不動産会社です"
+        industry = detect_industry(text)
+        self.assertEqual(industry, "real_estate")
+
     def test_detect_industry_empty(self):
         self.assertEqual(detect_industry(""), "unknown")
 

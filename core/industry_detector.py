@@ -17,6 +17,18 @@ INDUSTRY_CONTENTS = {
         "keywords": ["診療案内", "医師紹介", "アクセス", "予約", "診療時間", "初診"],
         "display_name": "クリニック",
     },
+    "real_estate": {
+        "keywords": ["物件", "賃貸", "売買", "マンション", "戸建て", "土地"],
+        "display_name": "不動産",
+    },
+    "education": {
+        "keywords": ["学習", "教育", "講座", "スクール", "研修", "資格"],
+        "display_name": "教育・人材",
+    },
+    "finance": {
+        "keywords": ["融資", "投資", "保険", "資産運用", "金利", "銀行"],
+        "display_name": "金融・保険",
+    },
 }
 
 
