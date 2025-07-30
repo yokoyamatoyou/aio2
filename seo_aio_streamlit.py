@@ -192,11 +192,16 @@ def section_break(story, width) -> None:
 
 
 def calculate_aio_score(text: str):
-    """Simple AIO scoring with industry personalization."""
+    """Return overall AIO score along with per-item breakdown."""
     industry = detect_industry(text)
-    score, missing = calculate_personalization_score(text, industry, INDUSTRY_CONTENTS)
+    score, missing = calculate_personalization_score(
+        text, industry, INDUSTRY_CONTENTS
+    )
     scores = {"業種適合性": score}
-    return score, scores, industry, missing
+
+    total_score = sum(scores.values()) / len(scores) if scores else 0.0
+
+    return total_score, scores, industry, missing
 
 
 
