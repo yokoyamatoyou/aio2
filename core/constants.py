@@ -4,6 +4,11 @@
 APP_VERSION = "3.0.0"
 APP_NAME = "SEO・AIO統合分析ツール"
 
+# OpenAI API defaults
+DEFAULT_CHAT_MODEL = "gpt-4.1-mini"
+DEFAULT_TEMPERATURE = 0.2
+DEFAULT_TOP_P = 0.9
+
 # インテル風カラースキーム
 COLOR_PALETTE = {
     "primary": "#00C7FD",        # Intel Blue

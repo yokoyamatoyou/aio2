@@ -147,6 +147,9 @@ from core.constants import (
     APP_NAME,
     COLOR_PALETTE,
     FONT_STACK,
+    DEFAULT_CHAT_MODEL,
+    DEFAULT_TEMPERATURE,
+    DEFAULT_TOP_P,
     AIO_SCORE_MAP_JP,
     AIO_SCORE_MAP_JP_UPPER,
     AIO_SCORE_MAP_JP_LOWER,
@@ -714,8 +717,8 @@ URL: {url}
 """
 
         try:
-            # GPT-4.1-miniモデルを利用
-            model_name = "gpt-4.1-mini"
+            # GPTモデルを利用
+            model_name = DEFAULT_CHAT_MODEL
             print(f"[DEBUG] 使用モデル: {model_name}")
             
             # JSON形式を強制するシステムメッセージ
@@ -735,8 +738,8 @@ JSON以外のテキストや説明は一切含めないでください。
                     {"role": "user", "content": aio_prompt}
                 ],
                 "timeout": 180,
-                "temperature": 0.2,
-                "top_p": 0.9,
+                "temperature": DEFAULT_TEMPERATURE,
+                "top_p": DEFAULT_TOP_P,
                 "response_format": {"type": "json_object"},
             }
             
@@ -774,23 +777,23 @@ JSON以外のテキストや説明は一切含めないでください。
 
         except Exception as search_model_error:
             print(f"[WARN] モデルでエラー: {search_model_error}")
-            print("[INFO] フォールバックモデル(gpt-4.1-mini)に切り替えます...")
+            print(f"[INFO] フォールバックモデル({DEFAULT_CHAT_MODEL})に切り替えます...")
             
             try:
-                # フォールバック: gpt-4.1-mini に切り替え
+                # フォールバック: DEFAULT_CHAT_MODEL に切り替え
                 fallback_params = {
-                    "model": "gpt-4.1-mini",
+                    "model": DEFAULT_CHAT_MODEL,
                     "messages": [
                         {"role": "system", "content": "あなたはSEOとAIO（生成AI検索最適化）の専門家です。分析結果を指示されたJSON形式で返してください。"},
                         {"role": "user", "content": aio_prompt}
                     ],
                     "response_format": {"type": "json_object"},
-                    "temperature": 0.2,
-                    "top_p": 0.9,
+                    "temperature": DEFAULT_TEMPERATURE,
+                    "top_p": DEFAULT_TOP_P,
                     "timeout": 180
                 }
 
-                print("[DEBUG] フォールバックモデル: gpt-4.1-mini")
+                print(f"[DEBUG] フォールバックモデル: {DEFAULT_CHAT_MODEL}")
                 response = self.client.chat.completions.create(**fallback_params)
                 aio_analysis_str = response.choices[0].message.content
                 aio_analysis = json.loads(aio_analysis_str)
@@ -1400,8 +1403,8 @@ def main():
                     api_source = "不明"
                 
                 st.success(f"APIキーを{api_source}から正常に取得しました (文字数: {len(st.session_state.analyzer.api_key)})")
-                st.info("使用モデル: gpt-4.1-mini")
-                st.info("temperature=0.2, top_p=0.9 で固定")
+                st.info(f"使用モデル: {DEFAULT_CHAT_MODEL}")
+                st.info(f"temperature={DEFAULT_TEMPERATURE}, top_p={DEFAULT_TOP_P} で固定")
             else:
                 st.warning("APIキーが設定されていません")
                 
@@ -1834,7 +1837,7 @@ def main():
         
         ### 技術的特徴
         - **環境変数優先**: システム環境変数からAPIキーを取得（.envファイルもサポート）
-        - **マルチモデル対応**: GPT-4.1-mini（メイン）
+        - **マルチモデル対応**: gpt-4.1-mini（メイン）
         - **パラメータ固定**: temperature=0.2 / top_p=0.9 で安定した応答
         - **エラーハンドリング**: 詳細なデバッグ情報とエラー回復機能
         - **JSON応答処理**: マークダウン除去・構造抽出による堅牢な解析
