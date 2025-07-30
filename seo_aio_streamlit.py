@@ -163,6 +163,7 @@ from core.industry_detector import (
 from core.aio_scorer import calculate_personalization_score
 from core.visualization import create_aio_score_chart_vertical, create_aio_radar_chart
 from core.text_utils import detect_mojibake
+from core.advice_utils import generate_actionable_advice
 
 
 def add_corner(canvas, doc_obj) -> None:
@@ -309,17 +310,20 @@ class SEOAIOAnalyzer:
                 self.seo_results, self.aio_results, seo_weight, aio_weight
             )
 
+            advice = generate_actionable_advice(missing_contents, detected_key)
+
             self.last_analysis_results = {
-                "url": url, 
+                "url": url,
                 "user_industry": user_industry,
                 "final_industry": final_industry,
                 "industry_analysis": industry_analysis,
                 "balance": balance,
-                "seo_results": self.seo_results, 
+                "seo_results": self.seo_results,
                 "aio_results": self.aio_results,
                 "integrated_results": integrated_results,
                 "industry_fit_score": industry_fit_score,
                 "missing_industry_contents": missing_contents,
+                "industry_advice": advice,
                 "timestamp": datetime.now().isoformat()
             }
             return self.last_analysis_results
@@ -1010,6 +1014,12 @@ JSON以外のテキストや説明は一切含めないでください。
         if improvements:
             bullet_items = [ListItem(Paragraph(imp, normal_style)) for imp in improvements]
             story.append(ListFlowable(bullet_items, bulletType='bullet'))
+
+        advice_txt = self.last_analysis_results.get("industry_advice", "")
+        if advice_txt:
+            story.append(Spacer(1, 2*mm))
+            story.append(Paragraph(f"<b>業界向けアドバイス:</b> {advice_txt}", normal_style))
+
         story.append(Spacer(1, 5*mm))
 
         # スコア分布グラフの追加
@@ -1502,6 +1512,11 @@ def main():
             rec_balance = integrated_results.get('recommended_balance', {})
             st.subheader("推奨分析バランス")
             st.write(f"SEO {rec_balance.get('seo_focus', 50)}% - AIO {rec_balance.get('aio_focus', 50)}%")
+
+            advice_text = results.get('industry_advice', '')
+            if advice_text:
+                st.subheader("業界向けアドバイス")
+                st.write(advice_text)
             st.markdown("</div>", unsafe_allow_html=True)
         
         with tab2:  # AIO分析
