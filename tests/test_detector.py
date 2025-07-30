@@ -18,5 +18,8 @@ class TestIndustryDetector(unittest.TestCase):
         industry = detect_industry(text)
         self.assertEqual(industry, "restaurant")
 
+    def test_detect_industry_empty(self):
+        self.assertEqual(detect_industry(""), "unknown")
+
 if __name__ == '__main__':
     unittest.main()
