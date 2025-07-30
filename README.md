@@ -40,6 +40,7 @@ The main `seo_aio_streamlit.py` script imports these modules.
 - Japanese-labeled SEO score graphs for better clarity.
 - Enhanced PDF reports with actionable insights and modern styling.
 - Added conclusion and next-steps section in PDF reports.
+- Automatic industry detection with personalized content advice.
 
 ## Design Guidelines
 
