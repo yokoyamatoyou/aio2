@@ -12,6 +12,7 @@ from typing import Dict, List, Tuple, Optional
 from urllib.parse import urlparse
 import io
 import base64
+import numpy as np
 
 # Streamlit関連
 try:
@@ -160,7 +161,7 @@ from core.industry_detector import (
     detect_industry,
 )
 from core.aio_scorer import calculate_personalization_score
-from core.visualization import create_aio_score_chart_vertical
+from core.visualization import create_aio_score_chart_vertical, create_aio_radar_chart
 from core.text_utils import detect_mojibake
 
 
@@ -283,6 +284,12 @@ class SEOAIOAnalyzer:
             main_content = self._extract_main_content(soup)
             industry_analysis = self.industry_detector.analyze_industries(title, main_content, meta_desc)
 
+            # 業種適合性スコア
+            detected_key = detect_industry(main_content)
+            industry_fit_score, missing_contents = calculate_personalization_score(
+                main_content, detected_key, INDUSTRY_CONTENTS
+            )
+
             # 最終業界決定
             final_industry = self._determine_final_industry(user_industry, industry_analysis)
 
@@ -305,7 +312,9 @@ class SEOAIOAnalyzer:
                 "balance": balance,
                 "seo_results": self.seo_results, 
                 "aio_results": self.aio_results,
-                "integrated_results": integrated_results, 
+                "integrated_results": integrated_results,
+                "industry_fit_score": industry_fit_score,
+                "missing_industry_contents": missing_contents,
                 "timestamp": datetime.now().isoformat()
             }
             return self.last_analysis_results
@@ -1024,6 +1033,17 @@ JSON以外のテキストや説明は一切含めないでください。
             except Exception as e:
                 print(f"AIOグラフ挿入エラー: {e}")
 
+        # AIOレーダーチャート
+        radar_path = self._create_aio_radar_graph()
+        if radar_path:
+            story.append(Paragraph("AIOカテゴリ レーダーチャート", h2_style))
+            try:
+                radar_img = ReportLabImage(radar_path, width=12*cm, height=12*cm)
+                story.append(radar_img)
+                story.append(PageBreak())
+            except Exception as e:
+                print(f"レーダーチャート挿入エラー: {e}")
+
         story.append(Spacer(1, 5*mm))
 
         # 3. SEO分析結果
@@ -1241,9 +1261,45 @@ JSON以外のテキストや説明は一切含めないでください。
             plt.savefig(graph_path, dpi=300, bbox_inches='tight')
             plt.close()
             return graph_path
-            
+
         except Exception as e:
             print(f"AIOグラフ生成エラー: {e}")
+            return None
+
+    def _create_aio_radar_graph(self):
+        """AIOカテゴリのレーダーチャート生成"""
+        try:
+            if not self.aio_results:
+                return None
+
+            cat = self.aio_results.get("category_scores", {})
+            labels = ["E-E-A-T", "AI検索最適化", "ユーザー体験", "技術", "業種適合性", "AIO総合"]
+            values = [
+                cat.get("eeat_score", 0),
+                cat.get("ai_search_score", 0),
+                cat.get("user_experience_score", 0),
+                cat.get("technical_score", 0),
+                self.last_analysis_results.get("industry_fit_score", 0),
+                self.aio_results.get("total_score", 0),
+            ]
+
+            angles = np.linspace(0, 2 * np.pi, len(labels), endpoint=False).tolist()
+            values += values[:1]
+            angles += angles[:1]
+            fig = plt.figure(figsize=(6, 6))
+            ax = plt.subplot(111, polar=True)
+            ax.plot(angles, values, color=COLOR_PALETTE["primary"])
+            ax.fill(angles, values, color=COLOR_PALETTE["primary"], alpha=0.25)
+            ax.set_thetagrids([a * 180 / np.pi for a in angles[:-1]], labels)
+            ax.set_ylim(0, 100)
+            graph_path = "temp_aio_radar.png"
+            plt.tight_layout()
+            plt.savefig(graph_path, dpi=300, bbox_inches="tight")
+            plt.close()
+            return graph_path
+
+        except Exception as e:
+            print(f"AIOレーダーチャート生成エラー: {e}")
             return None
 
 # Streamlitアプリケーション
@@ -1639,6 +1695,25 @@ def main():
             st.write(f"**業界:** {final_industry.get('primary', 'N/A')} ({final_industry.get('source', 'N/A')})")
             st.write(f"**分析バランス:** SEO {100-results.get('balance', 50)}% - AIO {results.get('balance', 50)}%")
             st.write(f"**総合スコア:** {integrated_results.get('integrated_score', 0):.1f}/100")
+
+            radar_labels = {
+                "eeat_score": "E-E-A-T",
+                "ai_search_score": "AI検索最適化",
+                "user_experience_score": "ユーザー体験",
+                "technical_score": "技術",
+                "industry_fit": "業種適合性",
+                "total": "AIO総合"
+            }
+            radar_values = {
+                "eeat_score": aio_results.get("category_scores", {}).get("eeat_score", 0),
+                "ai_search_score": aio_results.get("category_scores", {}).get("ai_search_score", 0),
+                "user_experience_score": aio_results.get("category_scores", {}).get("user_experience_score", 0),
+                "technical_score": aio_results.get("category_scores", {}).get("technical_score", 0),
+                "industry_fit": results.get("industry_fit_score", 0),
+                "total": aio_results.get("total_score", 0)
+            }
+            fig_radar = create_aio_radar_chart(radar_values, radar_labels)
+            st.plotly_chart(fig_radar, use_container_width=True)
             
             # PDF生成ボタン
             if st.button("詳細PDFレポート生成", use_container_width=True):

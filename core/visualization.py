@@ -74,3 +74,22 @@ def create_aio_score_chart_vertical(
     fig.update_layout(title=title, xaxis_title="スコア", yaxis_title="項目", height=400)
     fig.update_yaxes(autorange="reversed")
     return fig
+
+
+def create_aio_radar_chart(data: Dict[str, float], labels_map: Dict[str, str]):
+    """Return radar chart with 6 axes including 業種適合性."""
+    labels = [labels_map.get(k, k) for k in labels_map.keys()]
+    values = [data.get(k, 0) for k in labels_map.keys()]
+
+    if go is None:
+        fig = SimpleFigure()
+        fig.add_trace({"type": "scatterpolar", "r": values, "theta": labels, "fill": "toself"})
+        fig.update_layout(polar={"radialaxis": {"range": [0, 100]}}, showlegend=False)
+        return fig
+
+    fig = go.Figure()
+    fig.add_trace(
+        go.Scatterpolar(r=values, theta=labels, fill="toself", marker_color=COLOR_PALETTE["accent"])
+    )
+    fig.update_layout(polar=dict(radialaxis=dict(range=[0, 100])), showlegend=False)
+    return fig
