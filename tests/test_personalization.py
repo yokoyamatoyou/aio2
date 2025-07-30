@@ -24,6 +24,25 @@ class TestPersonalizationScore(unittest.TestCase):
         self.assertAlmostEqual(total, scores['業種適合性'], places=1)
         self.assertIn('地図', missing)
 
+    def test_calculate_aio_score_unknown(self):
+        if not calculate_aio_score:
+            self.skipTest("main module not available")
+        text = "これはどの業種にも当てはまらない内容です。"
+        total, scores, industry, missing = calculate_aio_score(text)
+        self.assertEqual(industry, 'unknown')
+        self.assertEqual(total, 0.0)
+        self.assertEqual(scores['業種適合性'], 0.0)
+        self.assertEqual(missing, [])
+
+    def test_calculate_aio_score_empty(self):
+        if not calculate_aio_score:
+            self.skipTest("main module not available")
+        total, scores, industry, missing = calculate_aio_score('')
+        self.assertEqual(industry, 'unknown')
+        self.assertEqual(total, 0.0)
+        self.assertEqual(scores['業種適合性'], 0.0)
+        self.assertEqual(missing, [])
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -29,6 +29,7 @@ class TestVisualization(unittest.TestCase):
         fig = create_aio_radar_chart(values, labels)
         self.assertTrue(hasattr(fig, 'data'))
         self.assertEqual(len(fig.data[0]['r']), 6)
+        self.assertEqual(fig.layout.get('polar', {}).get('radialaxis', {}).get('range'), [0, 100])
 
 if __name__ == '__main__':
     unittest.main()
