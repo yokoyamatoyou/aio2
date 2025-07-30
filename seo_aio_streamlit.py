@@ -158,6 +158,7 @@ from core.industry_detector import (
     IndustryAnalysis,
     INDUSTRY_CONTENTS,
     detect_industry,
+    get_industry_display_name,
 )
 from core.aio_scorer import calculate_personalization_score
 from core.visualization import create_aio_score_chart_vertical, create_aio_radar_chart
@@ -191,15 +192,16 @@ def section_break(story, width) -> None:
     story.append(Spacer(1, 2 * mm))
 
 
-def calculate_aio_score(text: str):
-    """Return overall AIO score along with per-item breakdown."""
-    industry = detect_industry(text)
-    score, missing = calculate_personalization_score(
-        text, industry, INDUSTRY_CONTENTS
-    )
-    scores = {"業種適合性": score}
+def calculate_aio_score(text: str) -> Tuple[float, Dict[str, float], str, List[str]]:
+    """Return overall score, item scores, detected industry and missing contents."""
+    if not text:
+        return 0.0, {"業種適合性": 0.0}, "unknown", []
 
-    total_score = sum(scores.values()) / len(scores) if scores else 0.0
+    industry = detect_industry(text)
+    coverage, missing = calculate_personalization_score(text, industry, INDUSTRY_CONTENTS)
+    scores = {"業種適合性": coverage}
+
+    total_score = coverage
 
     return total_score, scores, industry, missing
 
@@ -1499,9 +1501,7 @@ def main():
             st.header("分析概要")
 
             detected = results.get("detected_industry", "unknown")
-            industry_display_name = INDUSTRY_CONTENTS.get(detected, {}).get(
-                "display_name", "特定できませんでした"
-            )
+            industry_display_name = get_industry_display_name(detected)
             st.subheader(f"判定された業種: {industry_display_name}")
             
             # スコア表示（メーター削除）

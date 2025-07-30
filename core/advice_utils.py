@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Helper for generating industry-specific advice."""
 from typing import List
-from .industry_detector import INDUSTRY_CONTENTS
+from .industry_detector import INDUSTRY_CONTENTS, get_industry_display_name
 
 
 def generate_actionable_advice(missing_keywords: List[str], industry: str) -> str:
@@ -15,7 +15,7 @@ def generate_actionable_advice(missing_keywords: List[str], industry: str) -> st
     info = INDUSTRY_CONTENTS.get(industry)
     joined = "、".join(missing_keywords)
     if info:
-        display = info["display_name"]
+        display = get_industry_display_name(industry)
         return (
             f"{display}のサイトとして、見込み客が求める『{joined}』に関する情報が不足しているようです。"
             "これらのコンテンツを追加することで、サイトの信頼性が向上し、受注機会の増加につながります。"
