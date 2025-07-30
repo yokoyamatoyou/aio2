@@ -321,6 +321,7 @@ class SEOAIOAnalyzer:
                 "seo_results": self.seo_results,
                 "aio_results": self.aio_results,
                 "integrated_results": integrated_results,
+                "detected_industry": detected_key,
                 "industry_fit_score": industry_fit_score,
                 "missing_industry_contents": missing_contents,
                 "industry_advice": advice,
@@ -1488,6 +1489,12 @@ def main():
         with tab1:  # 概要
             st.markdown("<div class='function-section'>", unsafe_allow_html=True)
             st.header("分析概要")
+
+            detected = results.get("detected_industry", "unknown")
+            industry_display_name = INDUSTRY_CONTENTS.get(detected, {}).get(
+                "display_name", "特定できませんでした"
+            )
+            st.subheader(f"判定された業種: {industry_display_name}")
             
             # スコア表示（メーター削除）
             col1, col2, col3 = st.columns(3)
