@@ -4,5 +4,6 @@ __pycache__/
 *.pyd
 .env
 .DS_Store
-*.png
+temp_aio_graph.png
+temp_seo_graph.png
 *.log
