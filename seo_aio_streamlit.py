@@ -153,7 +153,13 @@ from core.constants import (
     SEO_SCORE_LABELS,
 )
 from core.ui_components import load_global_styles, primary_button, text_input
-from core.industry_detector import IndustryDetector, IndustryAnalysis
+from core.industry_detector import (
+    IndustryDetector,
+    IndustryAnalysis,
+    INDUSTRY_CONTENTS,
+    detect_industry,
+)
+from core.aio_scorer import calculate_personalization_score
 from core.visualization import create_aio_score_chart_vertical
 from core.text_utils import detect_mojibake
 
@@ -182,6 +188,14 @@ def section_break(story, width) -> None:
     story.append(Spacer(1, 2 * mm))
     story.append(line)
     story.append(Spacer(1, 2 * mm))
+
+
+def calculate_aio_score(text: str):
+    """Simple AIO scoring with industry personalization."""
+    industry = detect_industry(text)
+    score, missing = calculate_personalization_score(text, industry, INDUSTRY_CONTENTS)
+    scores = {"業種適合性": score}
+    return score, scores, industry, missing
 
 
 

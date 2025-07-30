@@ -1,5 +1,5 @@
 import unittest
-from core.industry_detector import IndustryDetector
+from core.industry_detector import IndustryDetector, detect_industry
 
 class TestIndustryDetector(unittest.TestCase):
     def setUp(self):
@@ -12,6 +12,11 @@ class TestIndustryDetector(unittest.TestCase):
         self.assertEqual(result.primary_industry, "IT・テクノロジー")
         self.assertGreater(result.confidence_score, 0)
         self.assertIn("クラウド", result.industry_keywords)
+
+    def test_detect_industry_simple(self):
+        text = "予約やテイクアウトに対応した当店のメニューをご覧ください"
+        industry = detect_industry(text)
+        self.assertEqual(industry, "restaurant")
 
 if __name__ == '__main__':
     unittest.main()
