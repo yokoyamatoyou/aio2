@@ -14,6 +14,12 @@ class TestPersonalizationScore(unittest.TestCase):
         self.assertGreater(score, 40)
         self.assertIn('地図', missing)
 
+    def test_personalization_real_estate(self):
+        text = "マンションや戸建ての売買をサポートします。"
+        score, missing = calculate_personalization_score(text, 'real_estate', INDUSTRY_CONTENTS)
+        self.assertGreater(score, 40)
+        self.assertIn('賃貸', missing)
+
     def test_calculate_aio_score(self):
         text = "当店のメニューをご確認いただき、予約も簡単にできます。アクセスも便利です。"
         if not calculate_aio_score:

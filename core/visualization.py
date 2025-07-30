@@ -87,9 +87,13 @@ def create_aio_radar_chart(data: Dict[str, float], labels_map: Dict[str, str]):
         fig.update_layout(polar={"radialaxis": {"range": [0, 100]}}, showlegend=False)
         return fig
 
-    fig = go.Figure()
-    fig.add_trace(
+    plot_fig = go.Figure()
+    plot_fig.add_trace(
         go.Scatterpolar(r=values, theta=labels, fill="toself", marker_color=COLOR_PALETTE["accent"])
     )
-    fig.update_layout(polar=dict(radialaxis=dict(range=[0, 100])), showlegend=False)
-    return fig
+    plot_fig.update_layout(polar=dict(radialaxis=dict(range=[0, 100])), showlegend=False)
+
+    simple = SimpleFigure()
+    simple.data = [trace.to_plotly_json() for trace in plot_fig.data]
+    simple.layout = plot_fig.layout.to_plotly_json()
+    return simple
