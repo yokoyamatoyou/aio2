@@ -35,6 +35,11 @@ The code has been modularized:
 
 The main `seo_aio_streamlit.py` script imports these modules.
 
+### OpenAI Defaults
+
+The application communicates with OpenAI using `gpt-4.1-mini` with fixed parameters
+(`temperature=0.2`, `top_p=0.9`) for stable and reproducible analysis.
+
 ## Features
 
 - Japanese-labeled SEO score graphs for better clarity.

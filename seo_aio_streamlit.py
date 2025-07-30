@@ -147,6 +147,9 @@ from core.constants import (
     APP_NAME,
     COLOR_PALETTE,
     FONT_STACK,
+    DEFAULT_CHAT_MODEL,
+    DEFAULT_TEMPERATURE,
+    DEFAULT_TOP_P,
     AIO_SCORE_MAP_JP,
     AIO_SCORE_MAP_JP_UPPER,
     AIO_SCORE_MAP_JP_LOWER,
@@ -602,7 +605,7 @@ class SEOAIOAnalyzer:
         return sum(sc) / len(sc) if sc else 0
 
     def _analyze_aio(self, soup, url, final_industry, industry_analysis):
-        """AIO分析（GPT-4.1-mini-search-preview使用）"""
+        """AIO分析（GPT-4.1-mini使用）"""
         title = soup.title.string.strip() if soup.title and soup.title.string else "N/A"
         main_content = self._extract_main_content(soup)
         content_preview = main_content[:7000]
@@ -714,11 +717,11 @@ URL: {url}
 """
 
         try:
-            # GPT-4o-mini-search-previewモデル対応
-            model_name = "gpt-4o-mini-search-preview"
+            # GPTモデルを利用
+            model_name = DEFAULT_CHAT_MODEL
             print(f"[DEBUG] 使用モデル: {model_name}")
             
-            # search-previewモデル用のシステムメッセージ（JSON形式を強制）
+            # JSON形式を強制するシステムメッセージ
             system_message = """あなたはSEOとAIO（生成AI検索最適化）の専門家です。
 必要に応じて最新の市場トレンドを検索して分析結果に含めてください。
 
@@ -727,23 +730,18 @@ JSON以外のテキストや説明は一切含めないでください。
 回答の最初と最後に```json や ``` などのマークダウンも不要です。
 純粋なJSONオブジェクトのみを返してください。"""
             
-            # モデル互換性チェック用の基本パラメータ
+            # 基本パラメータ設定
             base_params = {
                 "model": model_name,
                 "messages": [
                     {"role": "system", "content": system_message},
                     {"role": "user", "content": aio_prompt}
                 ],
-                "timeout": 180
+                "timeout": 180,
+                "temperature": DEFAULT_TEMPERATURE,
+                "top_p": DEFAULT_TOP_P,
+                "response_format": {"type": "json_object"},
             }
-            
-            # search-previewモデルの場合、temperature と response_format を除外
-            if "search-preview" in model_name:
-                print("[DEBUG] search-previewモデル: temperature・response_formatパラメータ除外")
-            else:
-                base_params["temperature"] = 0.2
-                base_params["response_format"] = {"type": "json_object"}
-                print("[DEBUG] 通常モデル: temperature・response_formatパラメータ追加")
             
             response = self.client.chat.completions.create(**base_params)
 
@@ -778,23 +776,24 @@ JSON以外のテキストや説明は一切含めないでください。
             aio_analysis = json.loads(aio_analysis_str)
 
         except Exception as search_model_error:
-            print(f"[WARN] search-previewモデルでエラー: {search_model_error}")
-            print("[INFO] 通常モデル(gpt-4o-mini)にフォールバック中...")
+            print(f"[WARN] モデルでエラー: {search_model_error}")
+            print(f"[INFO] フォールバックモデル({DEFAULT_CHAT_MODEL})に切り替えます...")
             
             try:
-                # フォールバック: 通常モデルに切り替え
+                # フォールバック: DEFAULT_CHAT_MODEL に切り替え
                 fallback_params = {
-                    "model": "gpt-4o-mini",
+                    "model": DEFAULT_CHAT_MODEL,
                     "messages": [
                         {"role": "system", "content": "あなたはSEOとAIO（生成AI検索最適化）の専門家です。分析結果を指示されたJSON形式で返してください。"},
                         {"role": "user", "content": aio_prompt}
                     ],
                     "response_format": {"type": "json_object"},
-                    "temperature": 0.2,
+                    "temperature": DEFAULT_TEMPERATURE,
+                    "top_p": DEFAULT_TOP_P,
                     "timeout": 180
                 }
-                
-                print("[DEBUG] フォールバックモデル: gpt-4o-mini (通常版)")
+
+                print(f"[DEBUG] フォールバックモデル: {DEFAULT_CHAT_MODEL}")
                 response = self.client.chat.completions.create(**fallback_params)
                 aio_analysis_str = response.choices[0].message.content
                 aio_analysis = json.loads(aio_analysis_str)
@@ -802,7 +801,7 @@ JSON以外のテキストや説明は一切含めないでください。
                 
             except Exception as fallback_error:
                 print(f"[ERROR] フォールバックも失敗: {fallback_error}")
-                raise Exception(f"両方のモデルでエラー: search-preview({search_model_error}) / fallback({fallback_error})")
+                raise Exception(f"両方のモデルでエラー: main({search_model_error}) / fallback({fallback_error})")
         
         try:
 
@@ -859,7 +858,7 @@ JSON以外のテキストや説明は一切含めないでください。
             "category_scores": {cat: 10.0 for cat in ["eeat_score", "ai_search_score", "user_experience_score", "technical_score"]},
             "total_score": 10.0,
             "immediate_actions": [{"action": "OpenAI APIの接続と設定を確認してください。", "method": "APIキーとネットワーク設定の確認", "expected_impact": "分析機能の回復"}],
-            "medium_term_strategies": [{"strategy": "モデル互換性の確認", "timeline": "即座", "expected_outcome": "search-previewモデルまたは通常モデルでの動作確認"}],
+            "medium_term_strategies": [{"strategy": "モデル互換性の確認", "timeline": "即座", "expected_outcome": "モデル動作の安定確認"}],
             "competitive_advantages": [],
             "market_trend_strategies": [],
             "industry_analysis": {},
@@ -1404,8 +1403,8 @@ def main():
                     api_source = "不明"
                 
                 st.success(f"APIキーを{api_source}から正常に取得しました (文字数: {len(st.session_state.analyzer.api_key)})")
-                st.info(f"使用モデル: gpt-4o-mini-search-preview (自動フォールバック: gpt-4o-mini)")
-                st.info(f"両モデル対応: temperature・response_formatパラメータ自動調整")
+                st.info(f"使用モデル: {DEFAULT_CHAT_MODEL}")
+                st.info(f"temperature={DEFAULT_TEMPERATURE}, top_p={DEFAULT_TOP_P} で固定")
             else:
                 st.warning("APIキーが設定されていません")
                 
@@ -1815,7 +1814,7 @@ def main():
         - **業界自動判定**: コンテンツから業界を自動識別
         - **SEO分析**: 従来のSEO指標を詳細分析
         - **AIO分析**: 生成AI検索エンジンに最適化された分析
-        - **市場トレンド分析**: 最新の業界動向を反映 (GPT-4o-mini-search-preview)
+        - **市場トレンド分析**: 最新の業界動向を反映 (GPT-4.1-mini)
         - **詳細PDFレポート**: グラフ付きの包括的レポート生成
         - **モダンUI**: グレー基調の洗練されたデザイン
         
@@ -1838,8 +1837,8 @@ def main():
         
         ### 技術的特徴
         - **環境変数優先**: システム環境変数からAPIキーを取得（.envファイルもサポート）
-        - **マルチモデル対応**: GPT-4o-mini-search-preview（市場トレンド分析）+ GPT-4o-mini（フォールバック）
-        - **自動パラメータ調整**: モデル特性に応じてtemperature・response_format自動調整
+        - **マルチモデル対応**: gpt-4.1-mini（メイン）
+        - **パラメータ固定**: temperature=0.2 / top_p=0.9 で安定した応答
         - **エラーハンドリング**: 詳細なデバッグ情報とエラー回復機能
         - **JSON応答処理**: マークダウン除去・構造抽出による堅牢な解析
         """)
