@@ -1,0 +1,10 @@
+streamlit
+plotly
+requests
+beautifulsoup4
+tldextract
+numpy
+matplotlib
+reportlab
+openai
+python-dotenv
