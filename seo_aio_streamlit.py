@@ -11,6 +11,7 @@ from datetime import datetime
 from typing import Dict, List, Tuple, Optional
 from urllib.parse import urlparse
 import numpy as np
+import tempfile
 
 # Streamlit関連
 try:
@@ -1205,6 +1206,10 @@ JSON以外のテキストや説明は一切含めないでください。
             import traceback
             traceback.print_exc()
             raise Exception(f"PDFのビルドエラー: {str(e_build)}")
+        finally:
+            for p in [seo_graph_path, aio_graph_path, radar_path]:
+                if p and os.path.exists(p):
+                    os.remove(p)
 
     def _create_seo_score_graph(self):
         """SEOスコアグラフ生成"""
@@ -1270,8 +1275,10 @@ JSON以外のテキストや説明は一切含めないでください。
                         va='center', ha='left', fontsize=9)
 
             plt.tight_layout()
-            
-            graph_path = "temp_aio_graph.png"
+
+            tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".png")
+            graph_path = tmp.name
+            tmp.close()
             plt.savefig(graph_path, dpi=300, bbox_inches='tight')
             plt.close()
             return graph_path
@@ -1306,7 +1313,10 @@ JSON以外のテキストや説明は一切含めないでください。
             ax.fill(angles, values, color=COLOR_PALETTE["primary"], alpha=0.25)
             ax.set_thetagrids([a * 180 / np.pi for a in angles[:-1]], labels)
             ax.set_ylim(0, 100)
-            graph_path = "temp_aio_radar.png"
+
+            tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".png")
+            graph_path = tmp.name
+            tmp.close()
             plt.tight_layout()
             plt.savefig(graph_path, dpi=300, bbox_inches="tight")
             plt.close()
