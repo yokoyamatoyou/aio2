@@ -13,8 +13,14 @@ def generate_actionable_advice(missing_keywords: List[str], industry: str) -> st
         return "特に不足している重要キーワードは見当たりません。"
 
     info = INDUSTRY_CONTENTS.get(industry)
-    display = info["display_name"] if info else "サイト"
     joined = "、".join(missing_keywords)
     if info:
-        return f"{display}向けに『{joined}』に関する情報を追加すると効果的です。"
-    return f"関連性の高い内容（例: {joined}）をページに盛り込むことを検討してください。"
+        display = info["display_name"]
+        return (
+            f"{display}のサイトとして、見込み客が求める『{joined}』に関する情報が不足しているようです。"
+            "これらのコンテンツを追加することで、サイトの信頼性が向上し、受注機会の増加につながります。"
+        )
+    return (
+        "サイトのコンテンツが少ないため、業種を特定できませんでした。"
+        "事業内容、サービス、会社情報などを具体的に記述し、コンテンツを充実させることを強くお勧めします。"
+    )
