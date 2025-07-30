@@ -3,6 +3,33 @@
 from dataclasses import dataclass
 from typing import List
 
+# Recommended contents per industry for personalization analysis
+INDUSTRY_CONTENTS = {
+    "restaurant": {
+        "keywords": ["メニュー", "コース", "予約", "アクセス", "地図", "テイクアウト", "デリバリー"],
+        "display_name": "飲食店",
+    },
+    "construction": {
+        "keywords": ["施工事例", "お客様の声", "技術紹介", "安全管理", "会社概要", "見積もり"],
+        "display_name": "建設業",
+    },
+    "clinic": {
+        "keywords": ["診療案内", "医師紹介", "アクセス", "予約", "診療時間", "初診"],
+        "display_name": "クリニック",
+    },
+}
+
+
+def detect_industry(text: str) -> str:
+    """Detect industry key based on keyword matching."""
+    if not text:
+        return "unknown"
+    lowered = text.lower()
+    for key, info in INDUSTRY_CONTENTS.items():
+        if any(keyword.lower() in lowered for keyword in info.get("keywords", [])):
+            return key
+    return "unknown"
+
 @dataclass
 class IndustryAnalysis:
     """業界分析結果"""
