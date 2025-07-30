@@ -12,5 +12,9 @@ class TestActionableAdvice(unittest.TestCase):
         self.assertIn('予約', advice)
         self.assertNotIn('飲食店', advice)
 
+    def test_no_missing_keywords(self):
+        advice = generate_actionable_advice([], 'restaurant')
+        self.assertIn('重要キーワードは見当たりません', advice)
+
 if __name__ == '__main__':
     unittest.main()
