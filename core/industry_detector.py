@@ -32,6 +32,11 @@ INDUSTRY_CONTENTS = {
 }
 
 
+def get_industry_display_name(key: str) -> str:
+    """Return human readable display name for industry key."""
+    return INDUSTRY_CONTENTS.get(key, {}).get("display_name", "特定できませんでした")
+
+
 def detect_industry(text: str) -> str:
     """Detect industry key based on keyword matching."""
     if not text:
