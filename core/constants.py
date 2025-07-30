@@ -39,7 +39,7 @@ AIO_SCORE_MAP_JP_UPPER = {
 
 AIO_SCORE_MAP_JP_LOWER = {
     "search_intent": "検索意図マッチング",
-    "personalization": "ーソナライズ可能性",
+    "personalization": "パーソナライズ可能性",
     "uniqueness": "情報の独自性",
     "completeness": "コンテンツの完全性",
     "readability": "読みやすさスコア",
