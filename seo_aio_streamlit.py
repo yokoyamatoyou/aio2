@@ -62,6 +62,7 @@ try:
     )
     from reportlab.lib.units import mm, cm
     from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
+    from reportlab.lib.utils import ImageReader
     from reportlab.pdfbase import pdfmetrics
     from reportlab.pdfbase.ttfonts import TTFont
 except ImportError as e:
@@ -1032,7 +1033,13 @@ JSON以外のテキストや説明は一切含めないでください。
         if seo_graph_path:
             story.append(Paragraph("SEOスコア分布", h2_style))
             try:
-                seo_img = ReportLabImage(seo_graph_path, width=16*cm, height=8*cm)
+                img_reader = ImageReader(seo_graph_path)
+                w, h = img_reader.getSize()
+                aspect = h / float(w)
+                desired_width = 16 * cm
+                seo_img = ReportLabImage(
+                    seo_graph_path, width=desired_width, height=desired_width * aspect
+                )
                 story.append(seo_img)
                 story.append(PageBreak())
             except Exception as e:
@@ -1043,7 +1050,13 @@ JSON以外のテキストや説明は一切含めないでください。
         if aio_graph_path:
             story.append(Paragraph("AIOスコア分布", h2_style))
             try:
-                aio_img = ReportLabImage(aio_graph_path, width=16*cm, height=20*cm)
+                img_reader = ImageReader(aio_graph_path)
+                w, h = img_reader.getSize()
+                aspect = h / float(w)
+                desired_width = 16 * cm
+                aio_img = ReportLabImage(
+                    aio_graph_path, width=desired_width, height=desired_width * aspect
+                )
                 story.append(aio_img)
                 story.append(PageBreak())
             except Exception as e:
@@ -1224,19 +1237,27 @@ JSON以外のテキストや説明は一切含めないでください。
                 
             labels = [SEO_SCORE_LABELS.get(k, k.replace("_score", "").title()) for k in scores.keys()]
             values = list(scores.values())
-            
-            fig, ax = plt.subplots(figsize=(10, 6))
+
+            num_labels = len(labels)
+            fig_height = max(0.6 * num_labels, 4)
+            fig, ax = plt.subplots(figsize=(10, fig_height))
             bars = ax.barh(labels, values, color=COLOR_PALETTE["primary"], height=0.6)
             ax.set_xlim(0, 10)
             ax.set_xlabel("スコア ( /10)", fontsize=12)
-            ax.set_title("SEOスコア分布", fontsize=14, fontweight='bold')
-            ax.tick_params(axis='y', labelsize=10)
-            ax.tick_params(axis='x', labelsize=10)
+            ax.set_title("SEOスコア分布", fontsize=16, fontweight='bold')
+            ax.tick_params(axis='y', labelsize=12)
+            ax.tick_params(axis='x', labelsize=11)
             ax.invert_yaxis()
 
             for bar, value in zip(bars, values):
-                ax.text(value + 0.1, bar.get_y() + bar.get_height()/2., f"{value:.1f}",
-                        va='center', ha='left', fontsize=10)
+                ax.text(
+                    value + 0.1,
+                    bar.get_y() + bar.get_height() / 2.0,
+                    f"{value:.1f}",
+                    va='center',
+                    ha='left',
+                    fontsize=11,
+                )
 
             plt.tight_layout()
             
@@ -1260,20 +1281,31 @@ JSON以外のテキストや説明は一切含めないでください。
                 return None
                 
             labels = [AIO_SCORE_MAP_JP.get(k, k.title()) for k in AIO_SCORE_MAP_JP.keys()]
-            values = [scores_data.get(k, {"score": 0}).get("score", 0) for k in AIO_SCORE_MAP_JP.keys()]
-            
-            fig, ax = plt.subplots(figsize=(10, 20))
+            values = [
+                scores_data.get(k, {"score": 0}).get("score", 0)
+                for k in AIO_SCORE_MAP_JP.keys()
+            ]
+
+            num_labels = len(labels)
+            fig_height = max(0.6 * num_labels, 6)
+            fig, ax = plt.subplots(figsize=(10, fig_height))
             bars = ax.barh(labels, values, color=COLOR_PALETTE["primary"], height=0.6)
             ax.set_xlim(0, 10)
             ax.set_xlabel("スコア ( /10)", fontsize=12)
-            ax.set_title("AIOスコア分布", fontsize=14, fontweight='bold')
-            ax.tick_params(axis='y', labelsize=9)
-            ax.tick_params(axis='x', labelsize=10)
+            ax.set_title("AIOスコア分布", fontsize=16, fontweight='bold')
+            ax.tick_params(axis='y', labelsize=11)
+            ax.tick_params(axis='x', labelsize=11)
             ax.invert_yaxis()
 
             for bar, value in zip(bars, values):
-                ax.text(value + 0.1, bar.get_y() + bar.get_height()/2., f"{value:.1f}",
-                        va='center', ha='left', fontsize=9)
+                ax.text(
+                    value + 0.1,
+                    bar.get_y() + bar.get_height() / 2.0,
+                    f"{value:.1f}",
+                    va='center',
+                    ha='left',
+                    fontsize=11,
+                )
 
             plt.tight_layout()
 
